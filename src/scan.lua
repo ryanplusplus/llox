@@ -23,10 +23,7 @@ return function(source, error_reporter)
   local start = 1
   local current = 1
   local line = 1
-
-  local function emit_token(token)
-    coroutine.yield(token)
-  end
+  local tokens = {}
 
   local function at_end()
     return current > #source
@@ -37,9 +34,9 @@ return function(source, error_reporter)
     return source:sub(current - 1, current - 1)
   end
 
-  local function add_token(type, literal)
-    local text = source:sub(start, current - 1)
-    emit_token(Token(type, text, literal, line))
+  local function add_token(type, literal, text)
+    text = text or source:sub(start, current - 1)
+    table.insert(tokens, Token(type, text, literal, line))
   end
 
   local function TokenAdder(type, literal)
@@ -156,12 +153,12 @@ return function(source, error_reporter)
     })[c](c)
   end
 
-  return coroutine.wrap(function()
     while not at_end() do
       start = current
       scan_token()
     end
 
-    emit_token(Token('EOF', '', nil, line))
-  end)
+    add_token('EOF', nil, '')
+
+  return tokens
 end

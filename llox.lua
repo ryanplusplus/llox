@@ -1,6 +1,8 @@
 package.path = package.path .. ';src/?.lua'
 
 local scan = require 'scan'
+local parse = require 'parse'
+local tostring_visitor = require 'tostring_visitor'
 
 local had_error
 
@@ -9,13 +11,23 @@ local function report(line, where, message)
   had_error = true
 end
 
-local function err(line, message)
+local function general_error(line, message)
   report(line, '', message)
 end
 
+local function parse_error(token, message)
+  if token.type == 'EOF' then
+    report(token.line, ' at end', message)
+  else
+    report(token.line, " at '" .. token.lexeme .. "'", message)
+  end
+end
+
 local function run(source)
-  for token in scan(source, err) do
-    print(tostring(token))
+  local tokens = scan(source, general_error)
+  local ast = parse(tokens, parse_error)
+  if not had_error then
+    print(tostring_visitor(ast))
   end
 end
 

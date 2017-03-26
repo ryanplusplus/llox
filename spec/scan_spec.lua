@@ -5,11 +5,7 @@ describe('scan', function()
   local function input(s)
     return {
       should_generate_tokens = function(expected)
-        local actual = {}
-        for token in scan(s, load'') do
-          table.insert(actual, token)
-        end
-        assert.are.same(expected, actual)
+        assert.are.same(expected, scan(s, load''))
       end
     }
   end
@@ -173,7 +169,7 @@ describe('scan', function()
 
   it('should detect unterminated strings', function()
     local error_reporter = spy.new(load'')
-    scan('"abc', error_reporter)()
+    scan('"abc', error_reporter)
     assert.spy(error_reporter).was_called_with(1, 'Unterminated string.')
   end)
 
@@ -187,7 +183,7 @@ describe('scan', function()
 
   it('should detect unexpected characters', function()
     local error_reporter = spy.new(load'')
-    scan('^', error_reporter)()
+    scan('^', error_reporter)
     assert.spy(error_reporter).was_called_with(1, 'Unexpected character.')
   end)
 
