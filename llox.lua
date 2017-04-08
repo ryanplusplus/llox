@@ -2,9 +2,9 @@ package.path = package.path .. ';src/?.lua'
 
 local scan = require 'scan'
 local parse = require 'parse'
-local tostring_visitor = require 'tostring_visitor'
+local interpret = require 'interpret'
 
-local had_error
+local had_error, had_runtime_error
 
 local function report(line, where, message)
   io.stderr:write('[line ' .. line .. '] Error' .. where .. ': ' .. message .. '\n')
@@ -23,12 +23,19 @@ local function parse_error(token, message)
   end
 end
 
+local function runtime_error(err)
+  io.stderr:write(err.message .. '\n[line ' .. err.token.line .. ']\n')
+  had_runtime_error = true
+end
+
 local function run(source)
   local tokens = scan(source, general_error)
+  if had_error then return end
   local ast = parse(tokens, parse_error)
-  if not had_error then
-    print(tostring_visitor(ast))
-  end
+  if had_error then return end
+  local result = interpret(ast, runtime_error)
+  if had_runtime_error then return end
+  print(result)
 end
 
 local function read_file(path)
@@ -43,6 +50,9 @@ local function run_file(path)
   run(read_file(path))
   if had_error then
     os.exit(65)
+  end
+  if had_runtime_error then
+    os.exit(70)
   end
 end
 

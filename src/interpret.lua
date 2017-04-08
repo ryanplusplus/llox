@@ -73,4 +73,12 @@ local function visit(node)
   })[node.class]()
 end
 
-return visit
+return function(ast, error_reporter)
+  local ok, result = pcall(function()
+    return visit(ast)
+  end)
+
+  if not ok then error_reporter(result) end
+
+  return result
+end

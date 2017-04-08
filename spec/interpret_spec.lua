@@ -8,9 +8,9 @@ describe('interpret', function()
   end
 
   local function should_generate_error_for_ast(s, expected_error)
-    local ok, actual_error = pcall(function() interpret(ast_for(s)) end)
-    assert.are.equal(false, ok)
-    assert.are.same(expected_error, actual_error)
+    local error_reporter = spy.new(load'')
+    interpret(ast_for(s), error_reporter)
+    assert.spy(error_reporter).was_called_with(expected_error)
   end
 
   it('should interpret literals', function()
