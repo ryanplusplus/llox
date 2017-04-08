@@ -39,8 +39,8 @@ local function run(source)
 end
 
 local function read_file(path)
-  local f = io.open(file, 'r')
-  assert(f, 'file ' .. file .. ' does not exist or cannot be opened')
+  local f = io.open(path, 'r')
+  assert(f, 'file ' .. path .. ' does not exist or cannot be opened')
   local contents = f:read('*all')
   f:close()
   return contents
