@@ -1,38 +1,66 @@
+local switch = require 'util.switch'
+
+local function check_types(expected, token, ...)
+  local operands = { ... }
+  for _, operand in ipairs(operands) do
+    if type(operand) ~= expected then
+      error({
+        token = token,
+        message = #operands > 1 and
+        'Operands must be ' .. expected .. 's.' or
+        'Operand must be a ' .. expected .. '.'
+      })
+    end
+  end
+end
+
 local function visit(node)
   return ({
     unary = function()
-      return ({
+      local left = visit(node.left)
+      return switch(node.operator.type, {
         MINUS = function()
-          return -visit(node.left)
+          check_types('number', node.operator, left)
+          return -left
         end,
         BANG = function()
-          return not visit(node.left)
+          check_types('boolean', node.operator, left)
+          return not left
         end
-      })[node.operator.type]()
+      })
     end,
 
     binary = function()
       local left, right = visit(node.left), visit(node.right)
-      return ({
+
+      return switch(node.operator.type, {
         PLUS = function()
           if type(left) == 'number' and type(right) == 'number' then
             return left + right
           elseif type(left) == 'string' and type(right) == 'string' then
             return left .. right
-          else
-          -- ?
           end
+
+          error({
+            token = node.operator,
+            message = 'Operands must be two numbers or two strings.'
+          })
         end,
-        MINUS = function() return left - right end,
-        STAR = function() return left * right end,
-        SLASH = function() return left / right end,
-        GREATER = function() return left > right end,
-        GREATER_EQUAL = function() return left >= right end,
-        LESS = function() return left < right end,
-        LESS_EQUAL = function() return left <= right end,
         EQUAL_EQUAL = function() return left == right end,
-        BANG_EQUAL = function() return left ~= right end
-      })[node.operator.type]()
+        BANG_EQUAL = function() return left ~= right end,
+        [switch.default] = function()
+          check_types('number', node.operator, left, right)
+          return switch(node.operator.type, {
+            MINUS = function() return left - right end,
+            STAR = function() return left * right end,
+            SLASH = function() return left / right end,
+            GREATER = function() return left > right end,
+            GREATER_EQUAL = function() return left >= right end,
+            LESS = function() return left < right end,
+            LESS_EQUAL = function() return left <= right end,
+          })
+        end
+      })
     end,
 
     grouping = function()

@@ -1,4 +1,5 @@
 local Token = require 'Token'
+local switch = require 'util.switch'
 
 local keywords = {
   ['and'] = 'AND',
@@ -115,9 +116,7 @@ return function(source, error_reporter)
   end
 
   local function scan_token()
-    local c = advance()
-
-    setmetatable({
+    switch(advance(), {
       ['('] = TokenAdder('LEFT_PAREN'),
       [')'] = TokenAdder('RIGHT_PAREN'),
       ['{'] = TokenAdder('LEFT_BRACE'),
@@ -137,28 +136,25 @@ return function(source, error_reporter)
       ['\r'] = load'',
       ['\t'] = load'',
       ['\n'] = function() line = line + 1 end,
-      ['"'] = add_string
-    }, {
-      __index = function()
-        return function(c)
-          if is_digit(c) then
-            add_number()
-          elseif is_alpha(c) then
-            add_identifier()
-          else
-            error_reporter(line, 'Unexpected character.')
-          end
+      ['"'] = add_string,
+      [switch.default] = function(c)
+        if is_digit(c) then
+          add_number()
+        elseif is_alpha(c) then
+          add_identifier()
+        else
+          error_reporter(line, 'Unexpected character.')
         end
       end
-    })[c](c)
+    })
   end
 
-    while not at_end() do
-      start = current
-      scan_token()
-    end
+  while not at_end() do
+    start = current
+    scan_token()
+  end
 
-    add_token('EOF', nil, '')
+  add_token('EOF', nil, '')
 
   return tokens
 end

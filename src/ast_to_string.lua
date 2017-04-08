@@ -1,9 +1,11 @@
+local switch = require 'util.switch'
+
 local function parenthesize(...)
   return '(' .. table.concat({ ... }, ' ') .. ')'
 end
 
 local function visit(node)
-  return ({
+  return switch(node.class, {
     unary = function()
       return parenthesize(node.operator.lexeme, visit(node.left))
     end,
@@ -16,7 +18,7 @@ local function visit(node)
     literal = function()
       return tostring(node.value)
     end
-  })[node.class]()
+  })
 end
 
 return visit
