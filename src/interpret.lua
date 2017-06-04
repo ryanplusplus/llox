@@ -69,16 +69,24 @@ local function visit(node)
 
     literal = function()
       return node.value
+    end,
+
+    print = function()
+      print(visit(node.value))
     end
   })[node.class]()
 end
 
-return function(ast, error_reporter)
-  local ok, result = pcall(function()
-    return visit(ast)
-  end)
+return function(statements, error_reporter)
+  local ok, result
 
-  if not ok then error_reporter(result) end
+  for _, statement in ipairs(statements) do
+    ok, result = pcall(function()
+      return visit(statement)
+    end)
+
+    if not ok then error_reporter(result) end
+  end
 
   return result
 end

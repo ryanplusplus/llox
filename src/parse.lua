@@ -122,14 +122,46 @@ return function(tokens, error_reporter)
 
   expression = equality
 
-  local success, ast = pcall(function()
-    return expression()
-  end)
+  -- private Stmt printStatement() {
+  --     Expr value = expression();
+  --     consume(SEMICOLON, "Expect ';' after value.");
+  --     return new Stmt.Print(value);
+  --   }
 
-  if success then
-    return ast
-  else
-    if ast == 'parse_error' then return end
-    error(ast)
+  local function print_statement()
+    local value = expression()
+    consume('SEMICOLON', "Expect ';' after value.")
+    return {
+      class = 'print',
+      value = value
+    }
   end
+
+  local function expression_statement()
+    local expression = expression()
+    consume('SEMICOLON', "Expect ';' after expression.")
+    return expression
+  end
+
+  local function statement()
+    if match({ 'PRINT' }) then return print_statement() end
+    return expression_statement()
+  end
+
+  local statements = {}
+
+  while not at_end() do
+    local success, ast = pcall(function()
+      return statement()
+    end)
+
+    if success then
+      table.insert(statements, ast)
+    else
+      if ast == 'parse_error' then return end
+      error(ast)
+    end
+  end
+
+  return statements
 end

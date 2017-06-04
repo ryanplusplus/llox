@@ -31,11 +31,10 @@ end
 local function run(source)
   local tokens = scan(source, general_error)
   if had_error then return end
-  local ast = parse(tokens, parse_error)
+  local statements = parse(tokens, parse_error)
   if had_error then return end
-  local result = interpret(ast, runtime_error)
+  interpret(statements, runtime_error)
   if had_runtime_error then return end
-  print(result)
 end
 
 local function read_file(path)
