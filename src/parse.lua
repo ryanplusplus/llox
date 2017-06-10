@@ -128,12 +128,6 @@ return function(tokens, error_reporter)
 
   expression = equality
 
-  -- private Stmt printStatement() {
-  --     Expr value = expression();
-  --     consume(SEMICOLON, "Expect ';' after value.");
-  --     return new Stmt.Print(value);
-  --   }
-
   local function print_statement()
     local value = expression()
     consume('SEMICOLON', "Expect ';' after value.")

@@ -395,6 +395,19 @@ describe('parse', function()
     }, parse(scan('var foo = 4;'), load''))
   end)
 
+  it('should parse variable expressions', function()
+    assert.are.same({
+      {
+        class = 'variable',
+        name = {
+          lexeme = 'foo',
+          line = 1,
+          type = 'IDENTIFIER'
+        }
+      }
+    }, parse(scan('foo;'), load''))
+  end)
+
   it('should require a semicolon after expression statements', function()
     local error_spy = spy.new(load'')
     local error_reporter = function(token, message)
