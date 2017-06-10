@@ -91,6 +91,12 @@ return function(tokens, error_reporter)
     if match({ 'TRUE' }) then return { class = 'literal', value = true } end
     if match({ 'NIL' }) then return { class = 'literal', value = nil } end
     if match({ 'NUMBER', 'STRING' }) then return { class = 'literal', value = previous().literal } end
+    if match({ 'IDENTIFIER' }) then
+      return {
+        class = 'variable',
+        name = previous()
+      }
+    end
     if match({ 'LEFT_PAREN' }) then
       local expr = expression()
       consume('RIGHT_PAREN', "Expect ')' after ")
@@ -148,11 +154,47 @@ return function(tokens, error_reporter)
     return expression_statement()
   end
 
+  local function var_declaration()
+    local name = consume('IDENTIFIER', 'Expect variable name.')
+
+    local initializer do
+      if match({ 'EQUAL' }) then
+        initializer = expression()
+      end
+    end
+
+    consume('SEMICOLON', "Expect ';' after variable declaration.")
+
+    return {
+      class = 'var',
+      name = name,
+      initializer = initializer
+    }
+  end
+
+  local function declaration()
+    local ok, result = pcall(function()
+      if match({ 'VAR' }) then
+        return var_declaration()
+      else
+        return statement()
+      end
+    end)
+
+    if not ok then
+      synchronize()
+      -- fixme should be `return nil` but causes tests to fail (probably because implementation is incomplete)
+      error(result)
+    end
+
+    return result
+  end
+
   local statements = {}
 
   while not at_end() do
     local success, ast = pcall(function()
-      return statement()
+      return declaration()
     end)
 
     if success then

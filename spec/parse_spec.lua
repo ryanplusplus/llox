@@ -365,6 +365,36 @@ describe('parse', function()
     }, parse(scan('print true;'), load''))
   end)
 
+  it('should parse variable declarations', function()
+    assert.are.same({
+      {
+        class = 'var',
+        name = {
+          lexeme = 'foo',
+          line = 1,
+          type = 'IDENTIFIER'
+        }
+      }
+    }, parse(scan('var foo;'), load''))
+  end)
+
+  it('should parse initialized variable declarations', function()
+    assert.are.same({
+      {
+        class = 'var',
+        name = {
+          lexeme = 'foo',
+          line = 1,
+          type = 'IDENTIFIER'
+        },
+        initializer = {
+          class = 'literal',
+          value = 4
+        }
+      }
+    }, parse(scan('var foo = 4;'), load''))
+  end)
+
   it('should require a semicolon after expression statements', function()
     local error_spy = spy.new(load'')
     local error_reporter = function(token, message)
@@ -387,6 +417,30 @@ describe('parse', function()
       parse(scan('print 3'), error_reporter)
     end)
     assert.spy(error_spy).was_called_with('EOF  ', "Expect ';' after value.")
+  end)
+
+  it('should require a semicolon after variable declarations', function()
+    local error_spy = spy.new(load'')
+    local error_reporter = function(token, message)
+      error_spy(tostring(token), message)
+    end
+
+    assert.has_error(function()
+      parse(scan('var a'), error_reporter)
+    end)
+    assert.spy(error_spy).was_called_with('EOF  ', "Expect ';' after variable declaration.")
+  end)
+
+  it('should require a variable name after `var`', function()
+    local error_spy = spy.new(load'')
+    local error_reporter = function(token, message)
+      error_spy(tostring(token), message)
+    end
+
+    assert.has_error(function()
+      parse(scan('var'), error_reporter)
+    end)
+    assert.spy(error_spy).was_called_with('EOF  ', 'Expect variable name.')
   end)
 
   it('should generate an error if a grouping does not include a right paren', function()
