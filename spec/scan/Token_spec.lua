@@ -1,5 +1,5 @@
-describe('Token', function()
-  local Token = require 'Token'
+describe('scan.Token', function()
+  local Token = require 'scan.Token'
 
   it('should make the type, lexeme, literal and line available', function()
     local token = Token('type', 'lexeme', 'literal', 'line')

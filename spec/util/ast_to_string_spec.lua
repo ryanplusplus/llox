@@ -1,5 +1,5 @@
-describe('ast_to_string', function()
-  local ast_to_string = require 'ast_to_string'
+describe('util.ast_to_string', function()
+  local ast_to_string = require 'util.ast_to_string'
 
   it('should print literal nodes', function()
     local node = { class = 'literal', value = 'hello' }

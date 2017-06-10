@@ -1,6 +1,6 @@
 describe('scan', function()
-  local scan = require 'scan'
-  local Token = require 'Token'
+  local scan = require 'scan.scan'
+  local Token = require 'scan.Token'
 
   local function input(s)
     return {

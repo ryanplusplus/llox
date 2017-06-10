@@ -1,6 +1,6 @@
-describe('parse', function()
-  local scan = require 'scan'
-  local parse = require 'parse'
+describe('parse.parse', function()
+  local scan = require 'scan.scan'
+  local parse = require 'parse.parse'
 
   it('should parse boolean literals', function()
     assert.are.same({

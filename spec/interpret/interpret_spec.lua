@@ -1,7 +1,7 @@
-describe('interpret', function()
-  local scan = require 'scan'
-  local parse = require 'parse'
-  local interpret = require 'interpret'
+describe('interpret.Interpreter', function()
+  local scan = require 'scan.scan'
+  local parse = require 'parse.parse'
+  local Interpreter = require 'interpret.Interpreter'
 
   before_each(function()
     _G._print = _G.print
@@ -13,6 +13,10 @@ describe('interpret', function()
 
   local function ast_for(s)
     return parse(scan(s))
+  end
+
+  local function interpret(statements, error_reporter)
+    return Interpreter(error_reporter).interpret(statements)
   end
 
   local function should_generate_error_for_ast(s, expected_error)
@@ -207,5 +211,12 @@ describe('interpret', function()
     _G.print = spy.new(load'')
     interpret(ast_for('var a = 42; print a;'))
     assert.spy(_G.print).was_called_with(42)
+  end)
+
+  it('should error for undefined variables', function()
+    should_generate_error_for_ast('print a;', {
+      token = { lexeme = 'a', line = 1, type = 'IDENTIFIER' },
+      message = "Undefined variable 'a'."
+    })
   end)
 end)

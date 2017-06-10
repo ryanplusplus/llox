@@ -1,4 +1,4 @@
-local Token = require 'Token'
+local Token = require 'scan.Token'
 local switch = require 'util.switch'
 
 local keywords = {

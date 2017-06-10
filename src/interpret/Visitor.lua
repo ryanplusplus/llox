@@ -14,11 +14,7 @@ local function check_types(expected, token, ...)
   end
 end
 
-local nil_var = {}
-
-return function(statements, error_reporter)
-  local env = {}
-
+return function(env)
   local function visit(node)
     return ({
       unary = function()
@@ -81,28 +77,23 @@ return function(statements, error_reporter)
       end,
 
       var = function()
-        if node.initializer then
-          env[node.name.lexeme] = visit(node.initializer)
-        else
-          env[node.name.lexeme] = nil_var
-        end
+        env.define(node.name.lexeme, visit(node.initializer))
       end,
 
       variable = function()
-        return env[node.name.lexeme]
+        if env.has(node.name.lexeme) then
+          return env.get(node.name.lexeme)
+        else
+          error({
+            token = node.name,
+            message = "Undefined variable '" .. node.name.lexeme .. "'."
+          })
+        end
       end
     })[node.class]()
   end
 
-  local ok, result
-
-  for _, statement in ipairs(statements) do
-    ok, result = pcall(function()
-      return visit(statement)
-    end)
-
-    if not ok then error_reporter(result) end
-  end
-
-  return result
+  return {
+    visit = visit
+  }
 end
