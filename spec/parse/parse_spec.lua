@@ -425,6 +425,24 @@ describe('parse.parse', function()
     }, parse(scan('foo = 4;'), load''))
   end)
 
+  it('should parse blocks', function()
+    assert.are.same({
+      {
+        class = 'block',
+        statements = {
+          {
+            class = 'literal',
+            value = 4
+          },
+          {
+            class = 'literal',
+            value = 5
+          }
+        }
+      }
+    }, parse(scan('{ 4; 5; }')))
+  end)
+
   it('should require a semicolon after expression statements', function()
     local error_spy = spy.new(load'')
     local error_reporter = function(token, message)

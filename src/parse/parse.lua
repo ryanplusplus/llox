@@ -85,6 +85,7 @@ return function(tokens, error_reporter)
   end
 
   local expression
+  local declaration
 
   local function primary()
     if match({ 'FALSE' }) then return { class = 'literal', value = false } end
@@ -165,8 +166,24 @@ return function(tokens, error_reporter)
     return expression
   end
 
+  local function block()
+    local statements = {}
+
+    while not check('RIGHT_BRACE') and not at_end() do
+      table.insert(statements, declaration())
+    end
+
+    consume('RIGHT_BRACE', "Expect '}' after block.")
+
+    return {
+      class = 'block',
+      statements = statements
+    }
+  end
+
   local function statement()
     if match({ 'PRINT' }) then return print_statement() end
+    if match({ 'LEFT_BRACE' }) then return block() end
     return expression_statement()
   end
 
@@ -188,7 +205,7 @@ return function(tokens, error_reporter)
     }
   end
 
-  local function declaration()
+  declaration = function()
     local ok, result = pcall(function()
       if match({ 'VAR' }) then
         return var_declaration()
