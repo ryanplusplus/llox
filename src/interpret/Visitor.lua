@@ -89,6 +89,17 @@ return function(env)
             message = "Undefined variable '" .. node.name.lexeme .. "'."
           })
         end
+      end,
+
+      assign = function()
+        if env.has(node.name.lexeme) then
+          env.set(node.name.lexeme, visit(node.value))
+        else
+          error({
+            token = node.name,
+            message = "Undefined variable '" .. node.name.lexeme .. "'."
+          })
+        end
       end
     })[node.class]()
   end

@@ -137,6 +137,7 @@ return function(tokens, error_reporter)
         local name = expression.name
         return {
           class = 'assign',
+          name = name,
           value = value
         }
       end

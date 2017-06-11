@@ -412,6 +412,11 @@ describe('parse.parse', function()
     assert.are.same({
       {
         class = 'assign',
+        name = {
+          lexeme = 'foo',
+          line = 1,
+          type = 'IDENTIFIER'
+        },
         value = {
           class = 'literal',
           value = 4

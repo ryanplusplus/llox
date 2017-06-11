@@ -213,8 +213,19 @@ describe('interpret.Interpreter', function()
     assert.spy(_G.print).was_called_with(42)
   end)
 
+  it('should interpret variable assignments', function()
+    _G.print = spy.new(load'')
+    interpret(ast_for('var a = 42; a = 5; print a;'))
+    assert.spy(_G.print).was_called_with(5)
+  end)
+
   it('should error for undefined variables', function()
     should_generate_error_for_ast('print a;', {
+      token = { lexeme = 'a', line = 1, type = 'IDENTIFIER' },
+      message = "Undefined variable 'a'."
+    })
+
+    should_generate_error_for_ast('a = 4;', {
       token = { lexeme = 'a', line = 1, type = 'IDENTIFIER' },
       message = "Undefined variable 'a'."
     })

@@ -12,6 +12,10 @@ return function()
       return values[name]
     end,
 
+    set = function(name, value)
+      values[name] = value
+    end,
+
     has = function(name)
       return defined[name]
     end
