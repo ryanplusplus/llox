@@ -105,13 +105,15 @@ return function(env)
       block = function()
         env.add_scope()
 
-        pcall(function()
+        local ok, result = pcall(function()
           for _, statement in ipairs(node.statements) do
             visit(statement)
           end
         end)
 
         env.remove_scope()
+
+        if not ok then error(result) end
       end
     })[node.class]()
   end
