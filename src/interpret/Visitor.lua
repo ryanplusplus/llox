@@ -100,6 +100,18 @@ return function(env)
             message = "Undefined variable '" .. node.name.lexeme .. "'."
           })
         end
+      end,
+
+      block = function()
+        env.add_scope()
+
+        pcall(function()
+          for _, statement in ipairs(node.statements) do
+            visit(statement)
+          end
+        end)
+
+        env.remove_scope()
       end
     })[node.class]()
   end

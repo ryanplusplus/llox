@@ -219,6 +219,20 @@ describe('interpret.Interpreter', function()
     assert.spy(_G.print).was_called_with(5)
   end)
 
+  it('should implement block scope for variables', function()
+    _G.print = spy.new(load'')
+    interpret(ast_for([[
+      var a = 42;
+      {
+        var a = 5;
+        print a;
+      }
+      print a;
+    ]]))
+    assert.spy(_G.print).was_called_with(5)
+    assert.spy(_G.print).was_called_with(42)
+  end)
+
   it('should error for undefined variables', function()
     should_generate_error_for_ast('print a;', {
       token = { lexeme = 'a', line = 1, type = 'IDENTIFIER' },
