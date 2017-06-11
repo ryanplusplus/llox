@@ -1,25 +1,23 @@
 local function Scope(parent)
-  return {
+  local scope = {
     parent = parent,
     defined = {},
     values = {}
   }
+
+  scope.with = function(name)
+    if scope.defined[name] then
+      return scope
+    elseif scope.parent then
+      return scope.parent.with(name)
+    end
+  end
+
+  return scope
 end
 
 return function()
   local scope = Scope()
-
-  local function scope_with(name)
-    local _scope = scope
-
-    while _scope do
-      if _scope.defined[name] then
-        return _scope
-      else
-        _scope = _scope.parent
-      end
-    end
-  end
 
   return {
     define = function(name, value)
@@ -28,15 +26,15 @@ return function()
     end,
 
     get = function(name)
-      return scope_with(name).values[name]
+      return scope.with(name).values[name]
     end,
 
     set = function(name, value)
-      scope_with(name).values[name] = value
+      scope.with(name).values[name] = value
     end,
 
     has = function(name)
-      return scope_with(name) ~= nil
+      return scope.with(name) ~= nil
     end,
 
     add_scope = function()
