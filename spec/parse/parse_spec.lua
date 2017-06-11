@@ -408,6 +408,18 @@ describe('parse.parse', function()
     }, parse(scan('foo;'), load''))
   end)
 
+  it('should parse assignment expressions', function()
+    assert.are.same({
+      {
+        class = 'assign',
+        value = {
+          class = 'literal',
+          value = 4
+        }
+      }
+    }, parse(scan('foo = 4;'), load''))
+  end)
+
   it('should require a semicolon after expression statements', function()
     local error_spy = spy.new(load'')
     local error_reporter = function(token, message)
@@ -466,6 +478,18 @@ describe('parse.parse', function()
       parse(scan('(3'), error_reporter)
     end)
     assert.spy(error_spy).was_called_with('EOF  ', "Expect ')' after ")
+  end)
+
+  it('should generate an error for invalid assignment targets', function()
+    local error_spy = spy.new(load'')
+    local error_reporter = function(token, message)
+      error_spy(tostring(token), message)
+    end
+
+    assert.has_error(function()
+      parse(scan('3 = 4;'), error_reporter)
+    end)
+    assert.spy(error_spy).was_called_with('EQUAL = ', 'Invalid assignment target.')
   end)
 
   it('should generate an error for invalid grammar', function()

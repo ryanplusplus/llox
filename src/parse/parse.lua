@@ -126,7 +126,28 @@ return function(tokens, error_reporter)
   local comparison = LeftAssociativeBinary({ 'GREATER', 'GREATER_EQUAL', 'LESS', 'LESS_EQUAL' }, term)
   local equality = LeftAssociativeBinary({ 'BANG_EQUAL', 'EQUAL_EQUAL' }, comparison)
 
-  expression = equality
+  local function assignment()
+    local expression = equality()
+
+    if match({ 'EQUAL' }) then
+      local equals = previous()
+      local value = assignment()
+
+      if expression.class == 'variable' then
+        local name = expression.name
+        return {
+          class = 'assign',
+          value = value
+        }
+      end
+
+      error(ParseError(equals, 'Invalid assignment target.'))
+    end
+
+    return expression
+  end
+
+  expression = assignment
 
   local function print_statement()
     local value = expression()
