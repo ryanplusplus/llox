@@ -151,6 +151,28 @@ return function(tokens, error_reporter)
 
   expression = assignment
 
+  local statement
+
+  local function if_statement()
+    consume('LEFT_PAREN', "Expect '(' after 'if'.")
+    local condition = expression()
+    consume('RIGHT_PAREN', "Expect ')' after if condition.")
+
+    local then_branch = statement()
+    local else_branch
+
+    if match({ 'ELSE' }) then
+      else_branch = statement()
+    end
+
+    return {
+      class = 'if',
+      condition = condition,
+      then_branch = then_branch,
+      else_branch = else_branch
+    }
+  end
+
   local function print_statement()
     local value = expression()
     consume('SEMICOLON', "Expect ';' after value.")
@@ -181,7 +203,8 @@ return function(tokens, error_reporter)
     }
   end
 
-  local function statement()
+  statement = function()
+    if match({ 'IF' }) then return if_statement() end
     if match({ 'PRINT' }) then return print_statement() end
     if match({ 'LEFT_BRACE' }) then return block() end
     return expression_statement()

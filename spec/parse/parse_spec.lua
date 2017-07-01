@@ -443,6 +443,51 @@ describe('parse.parse', function()
     }, parse(scan('{ 4; 5; }')))
   end)
 
+  it('should parse ifs', function()
+    assert.are.same({
+      {
+        class = 'if',
+        condition = {
+          class = 'literal',
+          value = true
+        },
+        then_branch = {
+          class = 'print',
+          value = {
+            class = 'literal',
+            value = 3
+          }
+        }
+      }
+    }, parse(scan('if(true) print 3;')))
+  end)
+
+  it('should parse if-elses', function()
+    assert.are.same({
+      {
+        class = 'if',
+        condition = {
+          class = 'literal',
+          value = true
+        },
+        then_branch = {
+          class = 'print',
+          value = {
+            class = 'literal',
+            value = 3
+          }
+        },
+        else_branch = {
+          class = 'print',
+          value = {
+            class = 'literal',
+            value = 4
+          }
+        }
+      }
+    }, parse(scan('if(true) print 3; else print 4;')))
+  end)
+
   it('should require a semicolon after expression statements', function()
     local error_spy = spy.new(load'')
     local error_reporter = function(token, message)
@@ -489,6 +534,30 @@ describe('parse.parse', function()
       parse(scan('var'), error_reporter)
     end)
     assert.spy(error_spy).was_called_with('EOF  ', 'Expect variable name.')
+  end)
+
+  it('should require an open paren after if', function()
+    local error_spy = spy.new(load'')
+    local error_reporter = function(token, message)
+      error_spy(tostring(token), message)
+    end
+
+    assert.has_error(function()
+      parse(scan('if'), error_reporter)
+    end)
+    assert.spy(error_spy).was_called_with('EOF  ', "Expect '(' after 'if'.")
+  end)
+
+  it('should require a close paren after an if condition', function()
+    local error_spy = spy.new(load'')
+    local error_reporter = function(token, message)
+      error_spy(tostring(token), message)
+    end
+
+    assert.has_error(function()
+      parse(scan('if(true'), error_reporter)
+    end)
+    assert.spy(error_spy).was_called_with('EOF  ', "Expect ')' after if condition.")
   end)
 
   it('should generate an error if a grouping does not include a right paren', function()
