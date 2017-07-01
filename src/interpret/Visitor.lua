@@ -114,6 +114,14 @@ return function(env)
         env.remove_scope()
 
         if not ok then error(result) end
+      end,
+
+      ['if'] = function()
+        if visit(node.condition) then
+          visit(node.then_branch)
+        elseif node.else_branch then
+          visit(node.else_branch)
+        end
       end
     })[node.class]()
   end

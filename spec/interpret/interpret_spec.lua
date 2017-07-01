@@ -233,6 +233,24 @@ describe('interpret.Interpreter', function()
     assert.spy(_G.print).was_called_with(42)
   end)
 
+  it('should interpret ifs that are true', function()
+    _G.print = spy.new(load'')
+    interpret(ast_for('if(true) print 5;'))
+    assert.spy(_G.print).was_called_with(5)
+  end)
+
+  it('should interpret ifs that are false', function()
+    _G.print = spy.new(load'')
+    interpret(ast_for('if(false) print 5;'))
+    assert.spy(_G.print).was_not_called()
+  end)
+
+  it('should interpret if-elses that are false', function()
+    _G.print = spy.new(load'')
+    interpret(ast_for('if(false) print 5; else print 21;'))
+    assert.spy(_G.print).was_called_with(21)
+  end)
+
   it('should error for undefined variables', function()
     should_generate_error_for_ast('print a;', {
       token = { lexeme = 'a', line = 1, type = 'IDENTIFIER' },
