@@ -122,6 +122,18 @@ return function(env)
         elseif node.else_branch then
           visit(node.else_branch)
         end
+      end,
+
+      logical = function()
+        local left = visit(node.left)
+
+        if node.operator.type == 'OR' then
+          if left then return left end
+        else
+          if not left then return left end
+        end
+
+        return visit(node.right)
       end
     })[node.class]()
   end

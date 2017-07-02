@@ -136,7 +136,7 @@ return function(tokens, error_reporter)
       expression = {
         class = 'logical',
         operator = operator,
-        expression = expression,
+        left = expression,
         right = right
       }
     end
@@ -153,7 +153,7 @@ return function(tokens, error_reporter)
       expression = {
         class = 'logical',
         operator = operator,
-        expression = expression,
+        left = expression,
         right = right
       }
     end

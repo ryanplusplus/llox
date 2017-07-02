@@ -251,6 +251,26 @@ describe('interpret.Interpreter', function()
     assert.spy(_G.print).was_called_with(21)
   end)
 
+  it('should interpret logical ors', function()
+    _G.print = spy.new(load'')
+
+    interpret(ast_for('print (3 or 5);'))
+    assert.spy(_G.print).was_called_with(3)
+
+    interpret(ast_for('print (false or 4);'))
+    assert.spy(_G.print).was_called_with(4)
+  end)
+
+  it('should interpret logical ands', function()
+    _G.print = spy.new(load'')
+
+    interpret(ast_for('print (3 and 4);'))
+    assert.spy(_G.print).was_called_with(4)
+
+    interpret(ast_for('print (false and 4);'))
+    assert.spy(_G.print).was_called_with(false)
+  end)
+
   it('should error for undefined variables', function()
     should_generate_error_for_ast('print a;', {
       token = { lexeme = 'a', line = 1, type = 'IDENTIFIER' },

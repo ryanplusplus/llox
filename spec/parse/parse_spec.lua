@@ -497,7 +497,7 @@ describe('parse.parse', function()
           type = 'OR',
           line = 1
         },
-        expression = {
+        left = {
           class = 'literal',
           value = 1
         },
@@ -518,7 +518,7 @@ describe('parse.parse', function()
           type = 'AND',
           line = 1
         },
-        expression = {
+        left = {
           class = 'literal',
           value = 1
         },
