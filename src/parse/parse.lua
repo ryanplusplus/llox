@@ -127,8 +127,42 @@ return function(tokens, error_reporter)
   local comparison = LeftAssociativeBinary({ 'GREATER', 'GREATER_EQUAL', 'LESS', 'LESS_EQUAL' }, term)
   local equality = LeftAssociativeBinary({ 'BANG_EQUAL', 'EQUAL_EQUAL' }, comparison)
 
-  local function assignment()
+  local function and_expression()
     local expression = equality()
+
+    while match({ 'AND' }) do
+      local operator = previous()
+      local right = equality()
+      expression = {
+        class = 'logical',
+        operator = operator,
+        expression = expression,
+        right = right
+      }
+    end
+
+    return expression
+  end
+
+  local function or_expression()
+    local expression = and_expression()
+
+    while match({ 'OR' }) do
+      local operator = previous()
+      local right = and_expression()
+      expression = {
+        class = 'logical',
+        operator = operator,
+        expression = expression,
+        right = right
+      }
+    end
+
+    return expression
+  end
+
+  local function assignment()
+    local expression = or_expression()
 
     if match({ 'EQUAL' }) then
       local equals = previous()

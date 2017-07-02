@@ -488,6 +488,48 @@ describe('parse.parse', function()
     }, parse(scan('if(true) print 3; else print 4;')))
   end)
 
+  it('should parse logical ors', function()
+    assert.are.same({
+      {
+        class = 'logical',
+        operator = {
+          lexeme = 'or',
+          type = 'OR',
+          line = 1
+        },
+        expression = {
+          class = 'literal',
+          value = 1
+        },
+        right = {
+          class = 'literal',
+          value = 2
+        }
+      }
+    }, parse(scan('1 or 2;')))
+  end)
+
+  it('should parse logical ands', function()
+    assert.are.same({
+      {
+        class = 'logical',
+        operator = {
+          lexeme = 'and',
+          type = 'AND',
+          line = 1
+        },
+        expression = {
+          class = 'literal',
+          value = 1
+        },
+        right = {
+          class = 'literal',
+          value = 2
+        }
+      }
+    }, parse(scan('1 and 2;')))
+  end)
+
   it('should require a semicolon after expression statements', function()
     local error_spy = spy.new(load'')
     local error_reporter = function(token, message)
