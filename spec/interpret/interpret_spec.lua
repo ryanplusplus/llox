@@ -251,6 +251,14 @@ describe('interpret.Interpreter', function()
     assert.spy(_G.print).was_called_with(21)
   end)
 
+  it('should interpret whiles', function()
+    _G.print = spy.new(load'')
+    interpret(ast_for('var a = 1; while(a < 3) { print a; a = a + 1; } print "out";'))
+    assert.spy(_G.print).was_called_with(1)
+    assert.spy(_G.print).was_called_with(2)
+    assert.spy(_G.print).was_called_with('out')
+  end)
+
   it('should interpret logical ors', function()
     _G.print = spy.new(load'')
 

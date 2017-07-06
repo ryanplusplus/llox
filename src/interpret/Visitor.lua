@@ -124,6 +124,12 @@ return function(env)
         end
       end,
 
+      ['while'] = function()
+        while visit(node.condition) do
+          visit(node.body)
+        end
+      end,
+
       logical = function()
         local left = visit(node.left)
 
