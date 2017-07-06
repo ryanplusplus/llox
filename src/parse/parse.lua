@@ -187,6 +187,77 @@ return function(tokens, error_reporter)
 
   local statement
 
+  local function var_declaration()
+    local name = consume('IDENTIFIER', 'Expect variable name.')
+
+    local initializer do
+      if match({ 'EQUAL' }) then
+        initializer = expression()
+      end
+    end
+
+    consume('SEMICOLON', "Expect ';' after variable declaration.")
+
+    return {
+      class = 'var',
+      name = name,
+      initializer = initializer
+    }
+  end
+
+  local function for_statement()
+    consume('LEFT_PAREN', "Expect '(' after 'for'.")
+
+    local initializer
+    if match({ 'VAR' }) then
+      initializer = var_declaration()
+    elseif not match({ 'SEMICOLON' }) then
+      initializer = expression_statement()
+    end
+
+    local condition
+    if not check('SEMICOLON') then
+      condition = expression()
+    end
+    consume('SEMICOLON', "Expect ';' after loop condition.")
+
+    local increment
+    if not check('RIGHT_PAREN') then
+      increment = expression()
+    end
+    consume('RIGHT_PAREN', "Expect ')' after for clauses.")
+
+    local body = statement()
+
+    if increment then
+      body = {
+        class = 'block',
+        statements = { body, increment }
+      }
+    end
+
+    if not condition then
+      condition = {
+        class = 'literal',
+        value = true
+      }
+    end
+    body = {
+      class = 'while',
+      condition = condition,
+      body = body
+    }
+
+    if initializer then
+      body = {
+        class = 'block',
+        statements = { initializer, body }
+      }
+    end
+
+    return body
+  end
+
   local function if_statement()
     consume('LEFT_PAREN', "Expect '(' after 'if'.")
     local condition = expression()
@@ -251,29 +322,12 @@ return function(tokens, error_reporter)
   end
 
   statement = function()
+    if match({ 'FOR' }) then return for_statement() end
     if match({ 'IF' }) then return if_statement() end
     if match({ 'PRINT' }) then return print_statement() end
     if match({ 'WHILE' }) then return while_statement() end
     if match({ 'LEFT_BRACE' }) then return block() end
     return expression_statement()
-  end
-
-  local function var_declaration()
-    local name = consume('IDENTIFIER', 'Expect variable name.')
-
-    local initializer do
-      if match({ 'EQUAL' }) then
-        initializer = expression()
-      end
-    end
-
-    consume('SEMICOLON', "Expect ';' after variable declaration.")
-
-    return {
-      class = 'var',
-      name = name,
-      initializer = initializer
-    }
   end
 
   declaration = function()

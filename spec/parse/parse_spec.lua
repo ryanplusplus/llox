@@ -488,7 +488,7 @@ describe('parse.parse', function()
     }, parse(scan('if(true) print 3; else print 4;')))
   end)
 
-  it('should whiles', function()
+  it('should parse whiles', function()
     assert.are.same({
       {
         class = 'while',
@@ -505,6 +505,203 @@ describe('parse.parse', function()
         }
       }
     }, parse(scan('while(true) print 3;')))
+  end)
+
+  it('should parse fors', function()
+    assert.are.same({
+      {
+        class = 'block',
+        statements = {
+          {
+            class = 'var',
+            name = {
+              lexeme = 'i',
+              line = 1,
+              type = 'IDENTIFIER'
+            },
+            initializer = {
+              class = 'literal',
+              value = 0
+            }
+          },
+          {
+            class = 'while',
+            condition = {
+              class = 'literal',
+              value = false
+            },
+            body = {
+              class = 'block',
+              statements = {
+                {
+                  class = 'print',
+                  value = {
+                    class = 'literal',
+                    value = 3
+                  }
+                },
+                {
+                  class = 'assign',
+                  name = {
+                    lexeme = 'i',
+                    line = 1,
+                    type = 'IDENTIFIER'
+                  },
+                  value = {
+                    class = 'literal',
+                    value = 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }, parse(scan('for(var i = 0; false; i = 1) print 3;')))
+  end)
+
+  it('should parse fors without initializers', function()
+    assert.are.same({
+      {
+        class = 'while',
+        condition = {
+          class = 'literal',
+          value = false
+        },
+        body = {
+          class = 'block',
+          statements = {
+            {
+              class = 'print',
+              value = {
+                class = 'literal',
+                value = 3
+              }
+            },
+            {
+              class = 'assign',
+              name = {
+                lexeme = 'i',
+                line = 1,
+                type = 'IDENTIFIER'
+              },
+              value = {
+                class = 'literal',
+                value = 1
+              }
+            }
+          }
+        }
+      }
+    }, parse(scan('for(; false; i = 1) print 3;')))
+  end)
+
+  it('should parse fors without conditions', function()
+    assert.are.same({
+      {
+        class = 'block',
+        statements = {
+          {
+            class = 'var',
+            name = {
+              lexeme = 'i',
+              line = 1,
+              type = 'IDENTIFIER'
+            },
+            initializer = {
+              class = 'literal',
+              value = 0
+            }
+          },
+          {
+            class = 'while',
+            condition = {
+              class = 'literal',
+              value = true
+            },
+            body = {
+              class = 'block',
+              statements = {
+                {
+                  class = 'print',
+                  value = {
+                    class = 'literal',
+                    value = 3
+                  }
+                },
+                {
+                  class = 'assign',
+                  name = {
+                    lexeme = 'i',
+                    line = 1,
+                    type = 'IDENTIFIER'
+                  },
+                  value = {
+                    class = 'literal',
+                    value = 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }, parse(scan('for(var i = 0; ; i = 1) print 3;')))
+  end)
+
+  it('should parse fors without increments', function()
+    assert.are.same({
+      {
+        class = 'block',
+        statements = {
+          {
+            class = 'var',
+            name = {
+              lexeme = 'i',
+              line = 1,
+              type = 'IDENTIFIER'
+            },
+            initializer = {
+              class = 'literal',
+              value = 0
+            }
+          },
+          {
+            class = 'while',
+            condition = {
+              class = 'literal',
+              value = false
+            },
+            body = {
+              class = 'print',
+              value = {
+                class = 'literal',
+                value = 3
+              }
+            }
+          }
+        }
+      }
+    }, parse(scan('for(var i = 0; false;) print 3;')))
+  end)
+
+  it('should parse empty fors', function()
+    assert.are.same({
+      {
+        class = 'while',
+        condition = {
+          class = 'literal',
+          value = true
+        },
+        body = {
+          class = 'print',
+          value = {
+            class = 'literal',
+            value = 3
+          }
+        }
+      }
+    }, parse(scan('for(;;) print 3;')))
   end)
 
   it('should parse logical ors', function()
@@ -644,6 +841,45 @@ describe('parse.parse', function()
     end)
     assert.spy(error_spy).was_called_with('EOF  ', "Expect ')' after condition.")
   end)
+
+  it('should require an open paren after for', function()
+    local error_spy = spy.new(load'')
+    local error_reporter = function(token, message)
+      error_spy(tostring(token), message)
+    end
+
+    assert.has_error(function()
+      parse(scan('for'), error_reporter)
+    end)
+    assert.spy(error_spy).was_called_with('EOF  ', "Expect '(' after 'for'.")
+  end)
+
+  it('should require a semicolon after the loop condition in a for', function()
+    local error_spy = spy.new(load'')
+    local error_reporter = function(token, message)
+      error_spy(tostring(token), message)
+    end
+
+    assert.has_error(function()
+      parse(scan('for(; true'), error_reporter)
+    end)
+    assert.spy(error_spy).was_called_with('EOF  ', "Expect ';' after loop condition.")
+  end)
+
+  it('should require closing paren after a for clause', function()
+    local error_spy = spy.new(load'')
+    local error_reporter = function(token, message)
+      error_spy(tostring(token), message)
+    end
+
+    assert.has_error(function()
+      parse(scan('for(;; i = i + 1'), error_reporter)
+    end)
+    assert.spy(error_spy).was_called_with('EOF  ', "Expect ')' after for clauses.")
+  end)
+
+  -- fixme expect ; after loop condition
+  -- fixme expect close paren
 
   it('should generate an error if a grouping does not include a right paren', function()
     local error_spy = spy.new(load'')
