@@ -259,6 +259,14 @@ describe('interpret.Interpreter', function()
     assert.spy(_G.print).was_called_with('out')
   end)
 
+  it('should interpret fors', function()
+    _G.print = spy.new(load'')
+    interpret(ast_for('for(var a = 1; a < 3; a = a + 1) { print a; } print "out";'))
+    assert.spy(_G.print).was_called_with(1)
+    assert.spy(_G.print).was_called_with(2)
+    assert.spy(_G.print).was_called_with('out')
+  end)
+
   it('should interpret logical ors', function()
     _G.print = spy.new(load'')
 
