@@ -216,6 +216,19 @@ return function(tokens, error_reporter)
     }
   end
 
+  local function while_statement()
+    consume('LEFT_PAREN', "Expect '(' after 'while'.")
+    local condition = expression()
+    consume('RIGHT_PAREN', "Expect ')' after condition.")
+    local body = statement()
+
+    return {
+      class = 'while',
+      condition = condition,
+      body = body
+    }
+  end
+
   local function expression_statement()
     local expression = expression()
     consume('SEMICOLON', "Expect ';' after expression.")
@@ -240,6 +253,7 @@ return function(tokens, error_reporter)
   statement = function()
     if match({ 'IF' }) then return if_statement() end
     if match({ 'PRINT' }) then return print_statement() end
+    if match({ 'WHILE' }) then return while_statement() end
     if match({ 'LEFT_BRACE' }) then return block() end
     return expression_statement()
   end

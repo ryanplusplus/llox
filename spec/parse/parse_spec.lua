@@ -488,6 +488,25 @@ describe('parse.parse', function()
     }, parse(scan('if(true) print 3; else print 4;')))
   end)
 
+  it('should whiles', function()
+    assert.are.same({
+      {
+        class = 'while',
+        condition = {
+          class = 'literal',
+          value = true
+        },
+        body = {
+          class = 'print',
+          value = {
+            class = 'literal',
+            value = 3
+          }
+        }
+      }
+    }, parse(scan('while(true) print 3;')))
+  end)
+
   it('should parse logical ors', function()
     assert.are.same({
       {
@@ -600,6 +619,30 @@ describe('parse.parse', function()
       parse(scan('if(true'), error_reporter)
     end)
     assert.spy(error_spy).was_called_with('EOF  ', "Expect ')' after if condition.")
+  end)
+
+  it('should require an open paren after while', function()
+    local error_spy = spy.new(load'')
+    local error_reporter = function(token, message)
+      error_spy(tostring(token), message)
+    end
+
+    assert.has_error(function()
+      parse(scan('while'), error_reporter)
+    end)
+    assert.spy(error_spy).was_called_with('EOF  ', "Expect '(' after 'while'.")
+  end)
+
+  it('should require a close paren after a while condition', function()
+    local error_spy = spy.new(load'')
+    local error_reporter = function(token, message)
+      error_spy(tostring(token), message)
+    end
+
+    assert.has_error(function()
+      parse(scan('while(true'), error_reporter)
+    end)
+    assert.spy(error_spy).was_called_with('EOF  ', "Expect ')' after condition.")
   end)
 
   it('should generate an error if a grouping does not include a right paren', function()
