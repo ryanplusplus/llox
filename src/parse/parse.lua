@@ -110,6 +110,41 @@ return function(tokens, error_reporter)
     error(ParseError(peek(), 'Expect '))
   end
 
+  local function finish_call(callee)
+    local arguments = {}
+    if not check('RIGHT_PAREN') then
+      repeat
+        if #arguments >= 8 then
+          ParseError(peek(), 'Cannot have more than 8 arguments.')
+        end
+        table.insert(arguments, expression())
+      until not match({ 'COMMA' })
+    end
+
+    local paren = consume('RIGHT_PAREN', "Expect ')' after arguments.")
+
+    return {
+      class = 'call',
+      callee = callee,
+      paren = paren,
+      arguments = arguments
+    }
+  end
+
+  local function call()
+    local expr = primary()
+
+    while true do
+      if match({ 'LEFT_PAREN' }) then
+        expr = finish_call(expr)
+      else
+        break
+      end
+    end
+
+    return expr
+  end
+
   local function unary()
     if match({ 'BANG', 'MINUS' }) then
       return {
@@ -119,7 +154,7 @@ return function(tokens, error_reporter)
       }
     end
 
-    return primary()
+    return call()
   end
 
   local factor = LeftAssociativeBinary({ 'SLASH', 'STAR' }, unary)

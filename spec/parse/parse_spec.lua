@@ -746,6 +746,78 @@ describe('parse.parse', function()
     }, parse(scan('1 and 2;')))
   end)
 
+  it('should parse function calls', function()
+    assert.are.same({
+      {
+        class = 'call',
+        callee = {
+          class = 'variable',
+          name = {
+            lexeme = 'foo',
+            line = 1,
+            type = 'IDENTIFIER'
+          }
+        },
+        paren = {
+          lexeme = ')',
+          line = 1,
+          type = 'RIGHT_PAREN'
+        },
+        arguments = {
+          {
+            class = 'literal',
+            value = 1
+          },
+          {
+            class = 'literal',
+            value = true
+          }
+        }
+      }
+    }, parse(scan('foo(1, true);')))
+  end)
+
+  it('should parse curried function calls', function()
+    assert.are.same({
+      {
+        class = 'call',
+        callee = {
+          class = 'call',
+          callee = {
+            class = 'variable',
+            name = {
+              lexeme = 'foo',
+              line = 1,
+              type = 'IDENTIFIER'
+            }
+          },
+          paren = {
+            lexeme = ')',
+            line = 1,
+            type = 'RIGHT_PAREN'
+          },
+          arguments = {
+            {
+              class = 'literal',
+              value = 1
+            }
+          }
+        },
+        paren = {
+          lexeme = ')',
+          line = 1,
+          type = 'RIGHT_PAREN'
+        },
+        arguments = {
+          {
+            class = 'literal',
+            value = true
+          }
+        }
+      }
+    }, parse(scan('foo(1)(true);')))
+  end)
+
   it('should require a semicolon after expression statements', function()
     local error_spy = spy.new(load'')
     local error_reporter = function(token, message)
@@ -878,9 +950,6 @@ describe('parse.parse', function()
     assert.spy(error_spy).was_called_with('EOF  ', "Expect ')' after for clauses.")
   end)
 
-  -- fixme expect ; after loop condition
-  -- fixme expect close paren
-
   it('should generate an error if a grouping does not include a right paren', function()
     local error_spy = spy.new(load'')
     local error_reporter = function(token, message)
@@ -903,6 +972,16 @@ describe('parse.parse', function()
       parse(scan('3 = 4;'), error_reporter)
     end)
     assert.spy(error_spy).was_called_with('EQUAL = ', 'Invalid assignment target.')
+  end)
+
+  it('should generate an error for too many arguments', function()
+    local error_spy = spy.new(load'')
+    local error_reporter = function(token, message)
+      error_spy(tostring(token), message)
+    end
+
+    parse(scan('foo(1, 2, 3, 4, 5, 6, 7, 8, 9);'), error_reporter)
+    assert.spy(error_spy).was_called_with('NUMBER 9 9', 'Cannot have more than 8 arguments.')
   end)
 
   it('should generate an error for invalid grammar', function()
