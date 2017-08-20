@@ -140,6 +140,33 @@ return function(env)
         end
 
         return visit(node.right)
+      end,
+
+      call = function()
+        local callee = visit(node.callee)
+
+        local arguments = {}
+        for _, argument in ipairs(arguments) do
+          table.insert(arguments, visit(argument))
+        end
+
+        if type(callee) ~= 'table' or type(callee.call) ~= 'function' then
+          error({
+            token = expr.paren,
+            message = 'Can only call functions and classes'
+          })
+        end
+
+        if #arguments ~= callee.arity() then
+          error({
+            token = expr.paren,
+            message = 'Expected ' .. callee.arity() .. ' arguments but got ' .. #arguments .. '.'
+          })
+        end
+
+        -- todo: 'env' was originally 'this'
+        -- until i see how this is used it's hard to say whether this is an appropriate substitution
+        return callee.call(env, arguments)
       end
     })[node.class]()
   end

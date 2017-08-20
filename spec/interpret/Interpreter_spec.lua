@@ -298,4 +298,11 @@ describe('interpret.Interpreter', function()
       message = "Undefined variable 'a'."
     })
   end)
+
+  it('should interpret function calls', function()
+    _G.print = spy.new(load'')
+
+    interpret(ast_for('print(clock());'))
+    assert.spy(_G.print).was_called()
+  end)
 end)
