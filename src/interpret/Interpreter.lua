@@ -1,9 +1,8 @@
-local Visitor = require 'interpret.Visitor'
+local visit = require 'interpret.visit'
 local Environment = require 'interpret.Environment'
 
 return function(error_reporter)
   local env = Environment()
-  local visitor = Visitor(env)
 
   env.define('clock', {
     arity = function()
@@ -21,7 +20,7 @@ return function(error_reporter)
 
       for _, statement in ipairs(statements) do
         ok, result = pcall(function()
-          return visitor.visit(statement)
+          return visit(statement, env)
         end)
 
         if not ok then error_reporter(result) end

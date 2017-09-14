@@ -1,48 +1,37 @@
-local function Scope(parent)
-  local scope = {
-    parent = parent,
-    defined = {},
-    values = {}
-  }
-
-  scope.with = function(name)
-    if scope.defined[name] then
-      return scope
-    elseif scope.parent then
-      return scope.parent.with(name)
-    end
-  end
-
-  return scope
-end
-
-return function()
-  local scope = Scope()
+return function(parent)
+  local defined = {}
+  local values = {}
 
   return {
     define = function(name, value)
-      scope.defined[name] = true
-      scope.values[name] = value
+      defined[name] = true
+      values[name] = value
     end,
 
     get = function(name)
-      return scope.with(name).values[name]
+      if defined[name] then
+        return values[name]
+      else
+        return parent.get(name)
+      end
     end,
 
     set = function(name, value)
-      scope.with(name).values[name] = value
+      if defined[name] then
+        values[name] = value
+      else
+        parent.set(name, value)
+      end
     end,
 
     has = function(name)
-      return scope.with(name) ~= nil
-    end,
-
-    add_scope = function()
-      scope = Scope(scope)
-    end,
-
-    remove_scope = function()
-      scope = scope.parent
+      if defined[name] then
+        return true
+      elseif parent then
+        return parent.has(name)
+      else
+        return false
+      end
     end
   }
 end

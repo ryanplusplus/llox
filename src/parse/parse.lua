@@ -100,14 +100,14 @@ return function(tokens, error_reporter)
     end
     if match({ 'LEFT_PAREN' }) then
       local expr = expression()
-      consume('RIGHT_PAREN', "Expect ')' after ")
+      consume('RIGHT_PAREN', "Expect ')' after expression.")
       return {
         class = 'grouping',
         expression = expr
       }
     end
 
-    error(ParseError(peek(), 'Expect '))
+    error(ParseError(peek(), 'Expect expression.'))
   end
 
   local function finish_call(callee)
@@ -365,9 +365,46 @@ return function(tokens, error_reporter)
     return expression_statement()
   end
 
+  local function _function(kind)
+    -- fixme need test
+    local name = consume('IDENTIFIER', 'Expect ' .. kind .. ' name.')
+
+    -- fixme need test
+    consume('LEFT_PAREN', "Expect '(' after " .. kind .. " name.");
+
+    local parameters = {} do
+      if not check('RIGHT_PAREN') then
+        repeat
+          if #parameters >= 8 then
+            -- fixme need test
+            ParseError(peek(), 'Cannot have more than 8 parameters.')
+          end
+          -- fixme need test
+          table.insert(parameters, consume('IDENTIFIER', 'Expect parameter name.'))
+        until not match({ 'COMMA' })
+      end
+    end
+
+    -- fixme need test
+    consume('RIGHT_PAREN', "Expect ')' after parameters.")
+    -- fixme need test
+    consume('LEFT_BRACE', "Expect '{' before " .. kind .. " body.")
+
+    local body = block()
+
+    return {
+      class = 'function',
+      name = name,
+      parameters = parameters,
+      body = body
+    }
+  end
+
   declaration = function()
     local ok, result = pcall(function()
-      if match({ 'VAR' }) then
+      if match({ 'FUN' }) then
+        return _function('function')
+      elseif match({ 'VAR' }) then
         return var_declaration()
       else
         return statement()

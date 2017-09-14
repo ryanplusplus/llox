@@ -818,6 +818,58 @@ describe('parse.parse', function()
     }, parse(scan('foo(1)(true);')))
   end)
 
+  it('should parse function definitions', function()
+    assert.are.same({
+      {
+        class = 'function',
+        name = {
+          lexeme = 'f',
+          line = 1,
+          type = 'IDENTIFIER'
+        },
+        parameters = {
+          {
+            lexeme = 'a',
+            line = 1,
+            type = 'IDENTIFIER'
+          },
+          {
+            lexeme = 'b',
+            line = 1,
+            type = 'IDENTIFIER'
+          }
+        },
+        body = {
+          class = 'block',
+          statements = {
+            {
+              class = 'print',
+              value = {
+                class = 'variable',
+                name = {
+                  lexeme = 'a',
+                  line = 1,
+                  type = 'IDENTIFIER'
+                }
+              }
+            },
+            {
+              class = 'print',
+              value = {
+                class = 'variable',
+                name = {
+                  lexeme = 'b',
+                  line = 1,
+                  type = 'IDENTIFIER'
+                }
+              }
+            },
+          }
+        }
+      }
+    }, parse(scan('fun f(a, b) { print a; print b; }')))
+  end)
+
   it('should require a semicolon after expression statements', function()
     local error_spy = spy.new(load'')
     local error_reporter = function(token, message)
@@ -959,7 +1011,7 @@ describe('parse.parse', function()
     assert.has_error(function()
       parse(scan('(3'), error_reporter)
     end)
-    assert.spy(error_spy).was_called_with('EOF  ', "Expect ')' after ")
+    assert.spy(error_spy).was_called_with('EOF  ', "Expect ')' after expression.")
   end)
 
   it('should generate an error for invalid assignment targets', function()
@@ -993,6 +1045,6 @@ describe('parse.parse', function()
     assert.has_error(function()
       parse(scan('3*'), error_reporter)
     end)
-    assert.spy(error_spy).was_called_with('EOF  ', 'Expect ')
+    assert.spy(error_spy).was_called_with('EOF  ', 'Expect expression.')
   end)
 end)
