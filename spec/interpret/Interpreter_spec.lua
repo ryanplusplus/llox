@@ -319,6 +319,20 @@ describe('interpret.Interpreter', function()
     assert.spy(_G.print).was_called_with(1)
   end)
 
+  it('should interpret recursive function calls', function()
+    _G.print = spy.new(load'')
+
+    interpret(ast_for([[
+      fun fibonacci(n) {
+        if (n <= 1) return n;
+        return fibonacci(n - 2) + fibonacci(n - 1);
+      }
+
+      print fibonacci(6);
+    ]]))
+    assert.spy(_G.print).was_called_with(8)
+  end)
+
   it('should interpret return statements', function()
     _G.print = spy.new(load'')
 

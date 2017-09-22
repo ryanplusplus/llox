@@ -175,7 +175,7 @@ local function visit(node, env)
     end,
 
     ['function'] = function()
-      env.define(node.name.lexeme, Function(node))
+      env.define(node.name.lexeme, Function(node, env))
     end,
 
     ['return'] = function()
