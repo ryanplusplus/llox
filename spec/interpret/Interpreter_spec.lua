@@ -333,6 +333,28 @@ describe('interpret.Interpreter', function()
     assert.spy(_G.print).was_called_with(8)
   end)
 
+  it('should support closures', function()
+    _G.print = spy.new(load'')
+
+    interpret(ast_for([[
+      fun makeCounter() {
+        var i = 0;
+        fun count() {
+          i = i + 1;
+          print i;
+        }
+
+        return count;
+      }
+
+      var counter = makeCounter();
+      counter();
+      counter();
+    ]]))
+    assert.spy(_G.print).was_called_with(2)
+    assert.spy(_G.print).was_called_with(1)
+  end)
+
   it('should interpret return statements', function()
     _G.print = spy.new(load'')
 
