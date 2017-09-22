@@ -161,11 +161,29 @@ local function visit(node, env)
         })
       end
 
-      return callee.call(visit, arguments)
+      local ok, result = pcall(function()
+        callee.call(visit, arguments)
+      end)
+
+      if not ok then
+        if type(result) == 'table' and result.is_return then
+          return result.value
+        else
+          error(result)
+        end
+      end
     end,
 
     ['function'] = function()
       env.define(node.name.lexeme, Function(node))
+    end,
+
+    ['return'] = function()
+      if node.value ~= nil then
+        error({ is_return = true, value = visit(node.value, env) })
+      end
+
+      error({ is_return = true })
     end
   })[node.class]()
 end

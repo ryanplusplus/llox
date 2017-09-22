@@ -318,4 +318,11 @@ describe('interpret.Interpreter', function()
     interpret(ast_for('fun f(a) { print a; } f(1);'))
     assert.spy(_G.print).was_called_with(1)
   end)
+
+  it('should interpret return statements', function()
+    _G.print = spy.new(load'')
+
+    interpret(ast_for('fun f(a) { return a; } print(f(1));'))
+    assert.spy(_G.print).was_called_with(1)
+  end)
 end)

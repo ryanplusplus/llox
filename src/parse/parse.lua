@@ -356,10 +356,28 @@ return function(tokens, error_reporter)
     }
   end
 
+  local function return_statement()
+    local keyword = previous()
+    local value
+
+    if not check('SEMICOLON') then
+      value = expression()
+    end
+
+    consume('SEMICOLON', "Expect ';' after return value.")
+
+    return {
+      class = 'return',
+      keyword = keyword,
+      value = value
+    }
+  end
+
   statement = function()
     if match({ 'FOR' }) then return for_statement() end
     if match({ 'IF' }) then return if_statement() end
     if match({ 'PRINT' }) then return print_statement() end
+    if match({ 'RETURN' }) then return return_statement() end
     if match({ 'WHILE' }) then return while_statement() end
     if match({ 'LEFT_BRACE' }) then return block() end
     return expression_statement()
