@@ -17,7 +17,7 @@ local function check_types(expected, token, ...)
 end
 
 local function visit(node, env)
-  return ({
+  return switch(node.class, {
     unary = function()
       local left = visit(node.left, env)
       return switch(node.operator.type, {
@@ -185,7 +185,7 @@ local function visit(node, env)
 
       error({ is_return = true })
     end
-  })[node.class]()
+  })
 end
 
 return visit
