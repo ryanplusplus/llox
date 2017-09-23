@@ -17,10 +17,10 @@ local function check_types(expected, token, ...)
 end
 
 return function(error_reporter)
-  local env = Environment()
+  local globals = Environment()
   local locals = {}
 
-  env.define('clock', {
+  globals.define('clock', {
     arity = function()
       return 0
     end,
@@ -208,7 +208,7 @@ return function(error_reporter)
 
       for _, statement in ipairs(statements) do
         ok, result = pcall(function()
-          return visit(statement, env)
+          return visit(statement, globals)
         end)
 
         if not ok then error_reporter(result) end
