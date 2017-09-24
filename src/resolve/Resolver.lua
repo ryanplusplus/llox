@@ -2,6 +2,7 @@ local switch = require 'util.switch'
 
 return function(interpreter, error_reporter)
   local scopes = {}
+  local current_function = 'none'
 
   local function begin_scope()
     table.insert(scopes, {})
@@ -40,6 +41,9 @@ return function(interpreter, error_reporter)
   local visit
 
   local function resolve_function(node, type)
+    local enclosing_function = current_function
+    current_function = type
+
     begin_scope()
     for _, parameter in ipairs(node.parameters) do
       declare(parameter)
@@ -47,6 +51,8 @@ return function(interpreter, error_reporter)
     end
     visit(node.body)
     end_scope()
+
+    current_function = enclosing_function
   end
 
   visit = function(node)
@@ -105,6 +111,13 @@ return function(interpreter, error_reporter)
       end,
 
       ['return'] = function()
+        if current_function == 'none' then
+          error_reporter({
+            token = node.keyword,
+            message = 'Cannot return from top-level code.'
+          })
+        end
+
         visit(node.value)
       end,
 

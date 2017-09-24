@@ -27,6 +27,10 @@ local function parse_error(token, message)
   end
 end
 
+local function resolution_error(err)
+  report(err.token.line, " at '" .. err.token.lexeme .. "'", err.message)
+end
+
 local function runtime_error(err)
   io.stderr:write(err.message .. '\n[line ' .. err.token.line .. ']\n')
   had_runtime_error = true
@@ -38,6 +42,7 @@ local function run(source)
   local statements = parse(tokens, parse_error)
   if had_error then return end
   resolver.resolve(statements)
+  if had_error then return end
   interpreter.interpret(statements)
   if had_runtime_error then return end
 end
@@ -63,13 +68,18 @@ end
 local function run_prompt()
   while true do
     io.write('> ')
-    run(io.read())
+    local input = io.read()
+    if not input then
+      print()
+      return
+    end
+    run(input)
     had_error = false
   end
 end
 
 interpreter = Interpreter(runtime_error)
-resolver = Resolver(interpreter, runtime_error)
+resolver = Resolver(interpreter, resolution_error)
 
 if #arg > 1 then
   print('Usage: lox [script]')

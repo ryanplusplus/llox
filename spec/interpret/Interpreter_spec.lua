@@ -398,4 +398,11 @@ describe('interpret.Interpreter', function()
       message = 'Variable with this name already declared in this scope.'
     })
   end)
+
+  it('should not allow a a top-level return', function()
+    should_generate_error_for('return "top level";', {
+      token = { lexeme = 'return', line = 1, type = 'RETURN' },
+      message = 'Cannot return from top-level code.'
+    })
+  end)
 end)
