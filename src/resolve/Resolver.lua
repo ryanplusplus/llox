@@ -1,6 +1,6 @@
 local switch = require 'util.switch'
 
-return function(interpreter)
+return function(interpreter, error_reporter)
   local scopes = {}
 
   local function begin_scope()
@@ -13,7 +13,14 @@ return function(interpreter)
 
   local function declare(name)
     if #scopes == 0 then return end
-    scopes[#scopes][name.lexeme] = false
+    local scope = scopes[#scopes]
+    if scope[name.lexeme] ~= nil then
+      error({
+        token = name,
+        message = 'Variable with this name already declared in this scope.'
+      })
+    end
+    scope[name.lexeme] = false
   end
 
   local function define(name)
@@ -139,7 +146,11 @@ return function(interpreter)
   return {
     resolve = function(statements)
       for _, statement in ipairs(statements) do
-        visit(statement)
+        ok, result = pcall(function()
+          return visit(statement, globals)
+        end)
+
+        if not ok then error_reporter(result) end
       end
     end
   }

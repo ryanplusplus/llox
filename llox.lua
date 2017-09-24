@@ -69,7 +69,7 @@ local function run_prompt()
 end
 
 interpreter = Interpreter(runtime_error)
-resolver = Resolver(interpreter)
+resolver = Resolver(interpreter, runtime_error)
 
 if #arg > 1 then
   print('Usage: lox [script]')
