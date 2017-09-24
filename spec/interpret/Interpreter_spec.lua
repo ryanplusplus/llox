@@ -2,6 +2,7 @@ describe('interpret.Interpreter', function()
   local scan = require 'scan.scan'
   local parse = require 'parse.parse'
   local Interpreter = require 'interpret.Interpreter'
+  local Resolver = require 'resolve.Resolver'
 
   before_each(function()
     _G._print = _G.print
@@ -16,7 +17,10 @@ describe('interpret.Interpreter', function()
   end
 
   local function interpret(statements, error_reporter)
-    return Interpreter(error_reporter).interpret(statements)
+    local interpreter = Interpreter(error_reporter)
+    local resolver = Resolver(interpreter)
+    resolver.resolve(statements)
+    return interpreter.interpret(statements)
   end
 
   local function should_generate_error_for_ast(s, expected_error)
@@ -360,5 +364,24 @@ describe('interpret.Interpreter', function()
 
     interpret(ast_for('fun f(a) { return a; } print(f(1));'))
     assert.spy(_G.print).was_called_with(1)
+  end)
+
+  it('should properly resolve scope', function()
+    _G.print = spy.new(load'')
+
+    interpret(ast_for([[
+      var a = "global";
+      {
+        fun showA() {
+          print a;
+        }
+
+        showA();
+        var a = "block";
+        showA();
+      }
+    ]]))
+    assert.spy(_G.print).was_called_with('global')
+    assert.spy(_G.print).was_called_with('global')
   end)
 end)

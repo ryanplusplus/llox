@@ -30,6 +30,15 @@ return function(error_reporter)
     end
   })
 
+  local function look_up_variable(name, node, env)
+    local distance = locals[node]
+    if distance then
+      return env.get_at(distance, name)
+    else
+      return globals.get(node.name)
+    end
+  end
+
   local function visit(node, env)
     return switch(node.class, {
       unary = function()
@@ -96,24 +105,16 @@ return function(error_reporter)
       end,
 
       variable = function()
-        if env.has(node.name.lexeme) then
-          return env.get(node.name.lexeme)
-        else
-          error({
-            token = node.name,
-            message = "Undefined variable '" .. node.name.lexeme .. "'."
-          })
-        end
+        return look_up_variable(node.name, node, env)
       end,
 
       assign = function()
-        if env.has(node.name.lexeme) then
-          env.set(node.name.lexeme, visit(node.value, env))
+        local value = visit(node.value, env)
+        local distance = locals[node]
+        if distance then
+          env.set_at(distance, node.name.lexeme, value)
         else
-          error({
-            token = node.name,
-            message = "Undefined variable '" .. node.name.lexeme .. "'."
-          })
+          globals.set(node.name, value)
         end
       end,
 

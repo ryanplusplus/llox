@@ -3,7 +3,10 @@ package.path = package.path .. ';src/?.lua'
 local scan = require 'scan.scan'
 local parse = require 'parse.parse'
 local Interpreter = require 'interpret.Interpreter'
+local Resolver = require 'resolve.Resolver'
+
 local interpreter
+local resolver
 
 local had_error, had_runtime_error
 
@@ -34,6 +37,7 @@ local function run(source)
   if had_error then return end
   local statements = parse(tokens, parse_error)
   if had_error then return end
+  resolver.resolve(statements)
   interpreter.interpret(statements)
   if had_runtime_error then return end
 end
@@ -65,6 +69,7 @@ local function run_prompt()
 end
 
 interpreter = Interpreter(runtime_error)
+resolver = Resolver(interpreter)
 
 if #arg > 1 then
   print('Usage: lox [script]')
