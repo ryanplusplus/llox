@@ -412,9 +412,29 @@ return function(tokens, error_reporter)
     }
   end
 
+  local function class_declaration()
+    local name = consume('IDENTIFIER', 'Expect class name.')
+    consume('LEFT_BRACE', "Expect '{' before class body.")
+
+    local methods = {}
+    while not check('RIGHT_BRACE') and not at_end() do
+      table.insert(methods, _function('method'))
+    end
+
+    consume('RIGHT_BRACE', "Expect '}' after class body.")
+
+    return {
+      class = 'class',
+      name = name,
+      methods = methods
+    }
+  end
+
   declaration = function()
     local ok, result = pcall(function()
-      if match({ 'FUN' }) then
+      if match({ 'CLASS' }) then
+        return class_declaration()
+      elseif match({ 'FUN' }) then
         return _function('function')
       elseif match({ 'VAR' }) then
         return var_declaration()

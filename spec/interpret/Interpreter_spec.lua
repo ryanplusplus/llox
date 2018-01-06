@@ -4,6 +4,13 @@ describe('interpret.Interpreter', function()
   local Interpreter = require 'interpret.Interpreter'
   local Resolver = require 'resolve.Resolver'
 
+  local match = require 'luassert.match'
+  assert:register('matcher', 'tostringable_to', function(state, arguments)
+    return function(value)
+      return arguments[1] == tostring(value)
+    end
+  end)
+
   before_each(function()
     _G._print = _G.print
   end)
@@ -335,6 +342,21 @@ describe('interpret.Interpreter', function()
       print fibonacci(6);
     ]]))
     assert.spy(_G.print).was_called_with(8)
+  end)
+
+  it('should interpret class declarations', function()
+    _G.print = spy.new(load'')
+
+    interpret(ast_for([[
+      class DevonshireCream {
+        serveOn() {
+          return "Scones";
+        }
+      }
+
+      print DevonshireCream;
+    ]]))
+    assert.spy(_G.print).was_called_with(match.is_tostringable_to('DevonshireCream'))
   end)
 
   it('should support closures', function()

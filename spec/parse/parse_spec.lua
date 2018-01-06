@@ -870,6 +870,63 @@ describe('parse.parse', function()
     }, parse(scan('fun f(a, b) { print a; print b; }')))
   end)
 
+  it('should parse class definitions', function()
+    assert.are.same({
+      {
+        class = 'class',
+        name = {
+          lexeme = 'MyClass',
+          line = 1,
+          type = 'IDENTIFIER'
+        },
+        methods = {
+          {
+            class = 'function',
+            name = {
+              lexeme = 'foo',
+              line = 1,
+              type = 'IDENTIFIER'
+            },
+            parameters = {},
+            body = {
+              class = 'block',
+              statements = {
+                {
+                  class = 'print',
+                  value = {
+                    class = 'literal',
+                    value = 'foo'
+                  }
+                }
+              }
+            }
+          },
+          {
+            class = 'function',
+            name = {
+              lexeme = 'bar',
+              line = 1,
+              type = 'IDENTIFIER'
+            },
+            parameters = {},
+            body = {
+              class = 'block',
+              statements = {
+                {
+                  class = 'print',
+                  value = {
+                    class = 'literal',
+                    value = 'bar'
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }, parse(scan('class MyClass { foo() { print "foo"; } bar() { print "bar"; } }')))
+  end)
+
   it('should require a semicolon after expression statements', function()
     local error_spy = spy.new(load'')
     local error_reporter = function(token, message)
@@ -1072,9 +1129,27 @@ describe('parse.parse', function()
     end)
   end)
 
-  it('should require a left brace to open function body', function()
+  it('should require a left brace to open a function body', function()
     assert.has_error(function()
       parse(scan('fun foo(a) }'))
+    end)
+  end)
+
+  it('should require classes to be named', function()
+    assert.has_error(function()
+      parse(scan('class { }'))
+    end)
+  end)
+
+  it('should require a left brace to open a class body', function()
+    assert.has_error(function()
+      parse(scan('class foo }'))
+    end)
+  end)
+
+  it('should require a right brace to close a class body', function()
+    assert.has_error(function()
+      parse(scan('class foo { '))
     end)
   end)
 

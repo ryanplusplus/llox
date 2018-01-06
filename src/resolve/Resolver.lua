@@ -65,6 +65,11 @@ return function(interpreter, error_reporter)
         end_scope()
       end,
 
+      class = function()
+        declare(node.name)
+        define(node.name)
+      end,
+
       var = function()
         declare(node.name)
         if node.initializer ~= nil then

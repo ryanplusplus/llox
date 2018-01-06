@@ -1,5 +1,6 @@
 local switch = require 'util.switch'
 local Function = require 'interpret.Function'
+local Class = require 'interpret.Class'
 local Environment = require 'interpret.Environment'
 
 local function check_types(expected, token, ...)
@@ -126,6 +127,12 @@ return function(error_reporter)
           end
         end)
         if not ok then error(result) end
+      end,
+
+      class = function()
+        env.define(node.name.lexeme)
+        local class = Class(node.name.lexeme)
+        env.set(node.name, class)
       end,
 
       ['if'] = function()
