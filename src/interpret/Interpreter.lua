@@ -184,7 +184,7 @@ return function(error_reporter)
         end
 
         local ok, result = pcall(function()
-          callee.call(visit, arguments)
+          return callee.call(visit, arguments)
         end)
 
         if not ok then
@@ -193,6 +193,8 @@ return function(error_reporter)
           else
             error(result)
           end
+        else
+          return result
         end
       end,
 
