@@ -927,6 +927,123 @@ describe('parse.parse', function()
     }, parse(scan('class MyClass { foo() { print "foo"; } bar() { print "bar"; } }')))
   end)
 
+  it('should parse gets', function()
+    assert.are.same({
+      {
+        class = 'class',
+        name = {
+          lexeme = 'MyClass',
+          line = 1,
+          type = 'IDENTIFIER'
+        },
+        methods = {}
+      },
+      {
+        class = 'var',
+        initializer = {
+          class = 'call',
+          arguments = {},
+          callee = {
+            class = 'variable',
+            name = {
+              lexeme = 'MyClass',
+              line = 1,
+              type = 'IDENTIFIER'
+            }
+          },
+          paren = {
+            lexeme = ')',
+            line = 1,
+            type = 'RIGHT_PAREN'
+          }
+        },
+        name = {
+          lexeme = 'o',
+          line = 1,
+          type = 'IDENTIFIER'
+        }
+      },
+      {
+        class = 'print',
+        value = {
+          class = 'get',
+          name = {
+            lexeme = 'foo',
+            line = 1,
+            type = 'IDENTIFIER'
+          },
+          object = {
+            class = 'variable',
+            name = {
+              lexeme = 'o',
+              line = 1,
+              type = 'IDENTIFIER'
+            }
+          }
+        }
+      }
+    }, parse(scan('class MyClass {} var o = MyClass(); print o.foo;')))
+  end)
+
+  it('should parse sets', function()
+    assert.are.same({
+      {
+        class = 'class',
+        name = {
+          lexeme = 'MyClass',
+          line = 1,
+          type = 'IDENTIFIER'
+        },
+        methods = {}
+      },
+      {
+        class = 'var',
+        initializer = {
+          class = 'call',
+          arguments = {},
+          callee = {
+            class = 'variable',
+            name = {
+              lexeme = 'MyClass',
+              line = 1,
+              type = 'IDENTIFIER'
+            }
+          },
+          paren = {
+            lexeme = ')',
+            line = 1,
+            type = 'RIGHT_PAREN'
+          }
+        },
+        name = {
+          lexeme = 'o',
+          line = 1,
+          type = 'IDENTIFIER'
+        }
+      },
+      {
+        class = 'set',
+        object = {
+          class = 'variable',
+          name = {
+            lexeme = 'o',
+            line = 1,
+            type = 'IDENTIFIER'
+          }
+        },
+        name = {
+          lexeme = 'foo',
+          line = 1,
+          type = 'IDENTIFIER'
+        },
+        value = {
+          class = 'literal',
+          value = 3
+        }
+      }
+    }, parse(scan('class MyClass {} var o = MyClass(); o.foo = 3;')))
+  end)
+
   it('should require a semicolon after expression statements', function()
     local error_spy = spy.new(load'')
     local error_reporter = function(token, message)
@@ -1143,13 +1260,19 @@ describe('parse.parse', function()
 
   it('should require a left brace to open a class body', function()
     assert.has_error(function()
-      parse(scan('class foo }'))
+      parse(scan('class Foo }'))
     end)
   end)
 
   it('should require a right brace to close a class body', function()
     assert.has_error(function()
-      parse(scan('class foo { '))
+      parse(scan('class Foo { '))
+    end)
+  end)
+
+  it('should require a property name when getting a property', function()
+    assert.has_error(function()
+      parse(scan('class Foo { } var foo = Foo(); foo.;'))
     end)
   end)
 

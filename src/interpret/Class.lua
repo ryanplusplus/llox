@@ -1,7 +1,11 @@
 local Instance = require 'interpret.Instance'
 
-return function(name)
-  local o = {}
+return function(name, methods)
+  local o = setmetatable({}, {
+    __tostring = function()
+      return name
+    end
+  })
 
   o.name = name
 
@@ -13,9 +17,9 @@ return function(name)
     return Instance(o)
   end
 
-  return setmetatable(o, {
-    __tostring = function()
-      return name
-    end
-  })
+  o.find_method = function(instance, name)
+    return methods[name]
+  end
+
+  return o
 end

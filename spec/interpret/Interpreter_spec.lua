@@ -344,21 +344,6 @@ describe('interpret.Interpreter', function()
     assert.spy(_G.print).was_called_with(8)
   end)
 
-  it('should interpret class declarations', function()
-    _G.print = spy.new(load'')
-
-    interpret(ast_for([[
-      class DevonshireCream {
-        serveOn() {
-          return "Scones";
-        }
-      }
-
-      print DevonshireCream;
-    ]]))
-    assert.spy(_G.print).was_called_with(match.is_tostringable_to('DevonshireCream'))
-  end)
-
   it('should support closures', function()
     _G.print = spy.new(load'')
 
@@ -386,6 +371,72 @@ describe('interpret.Interpreter', function()
 
     interpret(ast_for('fun f(a) { return a; } print(f(1));'))
     assert.spy(_G.print).was_called_with(1)
+  end)
+
+  it('should interpret class declarations', function()
+    _G.print = spy.new(load'')
+
+    interpret(ast_for([[
+      class DevonshireCream {
+        serveOn() {
+          return "Scones";
+        }
+      }
+
+      print DevonshireCream;
+    ]]))
+    assert.spy(_G.print).was_called_with(match.is_tostringable_to('DevonshireCream'))
+  end)
+
+  it('should interpret getting and setting fields', function()
+    _G.print = spy.new(load'')
+
+    interpret(ast_for([[
+      class MyClass {}
+      var o = MyClass();
+      o.foo = 3;
+      print o.foo;
+    ]]))
+    assert.spy(_G.print).was_called_with(3)
+  end)
+
+  it('should only allow property lookup on objects', function()
+    local code = [[
+      var o = 3;
+      print o.foo;
+    ]]
+
+    should_generate_error_for(code, {
+      token = { lexeme = 'foo', line = 2, type = 'IDENTIFIER' },
+      message = 'Only instances have properties.'
+    })
+  end)
+
+  it('should only allow setting fields on objects', function()
+    local code = [[
+      var o = 3;
+      o.foo = 4;
+    ]]
+
+    should_generate_error_for(code, {
+      token = { lexeme = 'foo', line = 2, type = 'IDENTIFIER' },
+      message = 'Only instances have fields.'
+    })
+  end)
+
+  it('should allow methods to be called', function()
+    _G.print = spy.new(load'')
+
+    interpret(ast_for([[
+        class Bacon {
+          eat() {
+            print "Crunch crunch crunch!";
+          }
+        }
+
+        Bacon().eat();
+      ]]))
+    assert.spy(_G.print).was_called_with(match.is_tostringable_to('Crunch crunch crunch!'))
   end)
 
   it('should properly resolve scope', function()

@@ -68,6 +68,9 @@ return function(interpreter, error_reporter)
       class = function()
         declare(node.name)
         define(node.name)
+        for _, method in ipairs(node.methods) do
+          resolve_function(method, 'method')
+        end
       end,
 
       var = function()
@@ -157,6 +160,15 @@ return function(interpreter, error_reporter)
 
       unary = function()
         visit(node.left)
+      end,
+
+      get = function()
+        visit(node.object)
+      end,
+
+      set = function()
+        visit(node.value)
+        visit(node.object)
       end
     })
   end

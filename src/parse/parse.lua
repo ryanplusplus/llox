@@ -137,6 +137,13 @@ return function(tokens, error_reporter)
     while true do
       if match({ 'LEFT_PAREN' }) then
         expr = finish_call(expr)
+      elseif match({ 'DOT' }) then
+        local name = consume('IDENTIFIER', "Expect property name after '.'.")
+        expr = {
+          class = 'get',
+          name = name,
+          object = expr
+        }
       else
         break
       end
@@ -208,6 +215,13 @@ return function(tokens, error_reporter)
         return {
           class = 'assign',
           name = name,
+          value = value
+        }
+      elseif expression.class == 'get' then
+        return {
+          class = 'set',
+          object = expression.object,
+          name = expression.name,
           value = value
         }
       end

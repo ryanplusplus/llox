@@ -1,0 +1,4 @@
+class MyClass {}
+var o = MyClass();
+o.foo = 3;
+print o.foo;

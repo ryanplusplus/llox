@@ -131,7 +131,13 @@ return function(error_reporter)
 
       class = function()
         env.define(node.name.lexeme)
-        local class = Class(node.name.lexeme)
+
+        local methods = {}
+        for _, method in ipairs(node.methods) do
+          methods[method.name.lexeme] = Function(method, env)
+        end
+        local class = Class(node.name.lexeme, methods)
+
         env.set(node.name, class)
       end,
 
@@ -196,6 +202,34 @@ return function(error_reporter)
         else
           return result
         end
+      end,
+
+      get = function()
+        local object = visit(node.object)
+
+        if type(object) == 'table' and object.is_object then
+          return object.get(node.name)
+        else
+          error({
+            token = node.name,
+            message = 'Only instances have properties.'
+          })
+        end
+      end,
+
+      set = function()
+        local object = visit(node.object)
+
+        if type(object) ~= 'table' or not object.is_object then
+          error({
+            token = node.name,
+            message = 'Only instances have fields.'
+          })
+        end
+
+        local value = visit(node.value)
+        object.set(node.name, value)
+        return value
       end,
 
       ['function'] = function()
