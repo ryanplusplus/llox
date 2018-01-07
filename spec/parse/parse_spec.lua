@@ -58,6 +58,33 @@ describe('parse.parse', function()
     }, parse(scan('this;'), load''))
   end)
 
+  it('should parse super', function()
+    assert.are.same({
+      {
+        class = 'call',
+        callee = {
+          class = 'super',
+          keyword = {
+            lexeme = 'super',
+            line = 1,
+            type = 'SUPER'
+          },
+          method = {
+            lexeme = 'foo',
+            line = 1,
+            type = 'IDENTIFIER'
+          }
+        },
+        arguments = {},
+        paren = {
+          lexeme = ')',
+          line = 1,
+          type = 'RIGHT_PAREN'
+        }
+      }
+    }, parse(scan('super.foo();'), load''))
+  end)
+
   it('should parse groupings', function()
     assert.are.same({
       {
@@ -1314,6 +1341,18 @@ describe('parse.parse', function()
   it('should require a superclass to be named', function()
     assert.has_error(function()
       parse(scan('class Foo < { }'))
+    end)
+  end)
+
+  it('should require a . after super', function()
+    assert.has_error(function()
+      parse(scan('super;'))
+    end)
+  end)
+
+  it('should require a superclass method name after super.', function()
+    assert.has_error(function()
+      parse(scan('super.();'))
     end)
   end)
 
