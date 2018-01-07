@@ -439,6 +439,24 @@ describe('interpret.Interpreter', function()
     assert.spy(_G.print).was_called_with(match.is_tostringable_to('Crunch crunch crunch!'))
   end)
 
+  it('should resolve this correctly within a method', function()
+    _G.print = spy.new(load'')
+
+    interpret(ast_for([[
+        class Cake {
+          taste() {
+            var adjective = "delicious";
+            print "The " + this.flavor + " cake is " + adjective + "!";
+          }
+        }
+
+        var cake = Cake();
+        cake.flavor = "German chocolate";
+        cake.taste();
+      ]]))
+    assert.spy(_G.print).was_called_with(match.is_tostringable_to('The German chocolate cake is delicious!'))
+  end)
+
   it('should properly resolve scope', function()
     _G.print = spy.new(load'')
 

@@ -205,7 +205,7 @@ return function(error_reporter)
       end,
 
       get = function()
-        local object = visit(node.object)
+        local object = visit(node.object, env)
 
         if type(object) == 'table' and object.is_object then
           return object.get(node.name)
@@ -218,7 +218,7 @@ return function(error_reporter)
       end,
 
       set = function()
-        local object = visit(node.object)
+        local object = visit(node.object, env)
 
         if type(object) ~= 'table' or not object.is_object then
           error({
@@ -227,9 +227,13 @@ return function(error_reporter)
           })
         end
 
-        local value = visit(node.value)
+        local value = visit(node.value, env)
         object.set(node.name, value)
         return value
+      end,
+
+      this = function()
+        return look_up_variable(node.keyword, node, env)
       end,
 
       ['function'] = function()

@@ -18,7 +18,9 @@ return function(name, methods)
   end
 
   o.find_method = function(instance, name)
-    return methods[name]
+    if methods[name] then
+      return methods[name].bind(instance)
+    end
   end
 
   return o

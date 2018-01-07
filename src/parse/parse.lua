@@ -92,6 +92,7 @@ return function(tokens, error_reporter)
     if match({ 'TRUE' }) then return { class = 'literal', value = true } end
     if match({ 'NIL' }) then return { class = 'literal', value = nil } end
     if match({ 'NUMBER', 'STRING' }) then return { class = 'literal', value = previous().literal } end
+    if match({ 'THIS' }) then return { class = 'this', keyword = previous() } end
     if match({ 'IDENTIFIER' }) then
       return {
         class = 'variable',

@@ -68,9 +68,17 @@ return function(interpreter, error_reporter)
       class = function()
         declare(node.name)
         define(node.name)
+
+        begin_scope();
+        scopes[#scopes].this = true
         for _, method in ipairs(node.methods) do
           resolve_function(method, 'method')
         end
+        end_scope()
+      end,
+
+      this = function()
+        resolve_local(node, node.keyword)
       end,
 
       var = function()

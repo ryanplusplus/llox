@@ -45,6 +45,19 @@ describe('parse.parse', function()
     }, parse(scan('nil;'), load''))
   end)
 
+  it('should parse this', function()
+    assert.are.same({
+      {
+        class = 'this',
+        keyword = {
+          lexeme = 'this',
+          line = 1,
+          type = 'THIS'
+        }
+      }
+    }, parse(scan('this;'), load''))
+  end)
+
   it('should parse groupings', function()
     assert.are.same({
       {
