@@ -496,4 +496,11 @@ describe('interpret.Interpreter', function()
       message = 'Cannot return from top-level code.'
     })
   end)
+
+  it('should not allow this to be used outside of a class', function()
+    should_generate_error_for('print this;', {
+      token = { lexeme = 'this', line = 1, type = 'THIS' },
+      message = "Cannot use 'this' outside of a class."
+    })
+  end)
 end)

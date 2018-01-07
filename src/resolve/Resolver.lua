@@ -3,6 +3,7 @@ local switch = require 'util.switch'
 return function(interpreter, error_reporter)
   local scopes = {}
   local current_function = 'none'
+  local current_class = 'none'
 
   local function begin_scope()
     table.insert(scopes, {})
@@ -69,16 +70,28 @@ return function(interpreter, error_reporter)
         declare(node.name)
         define(node.name)
 
+        local enclosing_class = current_class
+        current_class = 'class'
+
         begin_scope();
         scopes[#scopes].this = true
         for _, method in ipairs(node.methods) do
           resolve_function(method, 'method')
         end
         end_scope()
+
+        current_class = enclosing_class
       end,
 
       this = function()
-        resolve_local(node, node.keyword)
+        if current_class == 'none' then
+          error({
+            token = node.keyword,
+            message = "Cannot use 'this' outside of a class."
+          })
+        else
+          resolve_local(node, node.keyword)
+        end
       end,
 
       var = function()
