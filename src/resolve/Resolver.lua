@@ -75,6 +75,8 @@ return function(interpreter, error_reporter)
 
         if node.superclass then
           visit(node.superclass)
+          begin_scope()
+          scopes[#scopes].super = true
         end
 
         begin_scope();
@@ -83,6 +85,10 @@ return function(interpreter, error_reporter)
           resolve_function(method, method.name.lexeme == 'init' and 'initializer' or 'method')
         end
         end_scope()
+
+        if node.superclass then
+          end_scope()
+        end
 
         current_class = enclosing_class
       end,
@@ -201,6 +207,10 @@ return function(interpreter, error_reporter)
       set = function()
         visit(node.value)
         visit(node.object)
+      end,
+
+      super = function()
+        resolve_local(node, node.keyword)
       end
     })
   end

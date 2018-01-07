@@ -32,6 +32,7 @@ local function resolution_error(err)
 end
 
 local function runtime_error(err)
+  print(err)
   io.stderr:write(err.message .. '\n[line ' .. err.token.line .. ']\n')
   had_runtime_error = true
 end

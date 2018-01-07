@@ -141,6 +141,9 @@ return function(error_reporter)
               message = 'Superclass must be a class.'
             })
           end
+
+          env = Environment(env)
+          env.define('super', superclass)
         end
 
         local methods = {}
@@ -148,6 +151,10 @@ return function(error_reporter)
           methods[method.name.lexeme] = Function(method, env, method.name.lexeme == 'init')
         end
         local class = Class(node.name.lexeme, superclass, methods)
+
+        if superclass then
+          env = env.parent
+        end
 
         env.set(node.name, class)
       end,
@@ -241,6 +248,20 @@ return function(error_reporter)
         local value = visit(node.value, env)
         object.set(node.name, value)
         return value
+      end,
+
+      super = function()
+        local distance = locals[node]
+        local superclass = env.get_at(distance, 'super')
+        local object = env.get_at(distance - 1, 'this')
+        local method = superclass.find_method(object, node.method.lexeme)
+        if not method then
+          error({
+            token = node.method,
+            message = "Undefined property '" .. node.method.lexeme .. "'."
+          })
+        end
+        return method
       end,
 
       this = function()

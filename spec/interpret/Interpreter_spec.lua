@@ -428,50 +428,73 @@ describe('interpret.Interpreter', function()
     _G.print = spy.new(load'')
 
     interpret(ast_for([[
-        class Bacon {
-          eat() {
-            print "Crunch crunch crunch!";
-          }
+      class Bacon {
+        eat() {
+          print "Crunch crunch crunch!";
         }
+      }
 
-        Bacon().eat();
-      ]]))
-    assert.spy(_G.print).was_called_with(match.is_tostringable_to('Crunch crunch crunch!'))
+      Bacon().eat();
+    ]]))
+    assert.spy(_G.print).was_called_with('Crunch crunch crunch!')
   end)
 
   it('should resolve this correctly within a method', function()
     _G.print = spy.new(load'')
 
     interpret(ast_for([[
-        class Cake {
-          taste() {
-            var adjective = "delicious";
-            print "The " + this.flavor + " cake is " + adjective + "!";
-          }
+      class Cake {
+        taste() {
+          var adjective = "delicious";
+          print "The " + this.flavor + " cake is " + adjective + "!";
         }
+      }
 
-        var cake = Cake();
-        cake.flavor = "German chocolate";
-        cake.taste();
-      ]]))
-    assert.spy(_G.print).was_called_with(match.is_tostringable_to('The German chocolate cake is delicious!'))
+      var cake = Cake();
+      cake.flavor = "German chocolate";
+      cake.taste();
+    ]]))
+    assert.spy(_G.print).was_called_with('The German chocolate cake is delicious!')
   end)
 
   it('should allow inherited methods to be called', function()
     _G.print = spy.new(load'')
 
     interpret(ast_for([[
-        class Doughnut {
-          cook() {
-            print "Fry until golden brown.";
-          }
+      class Doughnut {
+        cook() {
+          print "Fry until golden brown.";
         }
+      }
 
-        class BostonCream < Doughnut {}
+      class BostonCream < Doughnut {}
 
-        BostonCream().cook();
-      ]]))
-    assert.spy(_G.print).was_called_with(match.is_tostringable_to('Fry until golden brown.'))
+      BostonCream().cook();
+    ]]))
+    assert.spy(_G.print).was_called_with('Fry until golden brown.')
+  end)
+
+  it('should allow methods to be called on the superclass via super', function()
+    _G.print = spy.new(load'')
+
+    interpret(ast_for([[
+      class Doughnut {
+        cook() {
+          print "Fry until golden brown.";
+        }
+      }
+
+      class BostonCream < Doughnut {
+        cook() {
+          super.cook();
+          print "Pipe full of custard and coat with chocolate.";
+        }
+      }
+
+      BostonCream().cook();
+    ]]))
+    assert.spy(_G.print).was_called_with('Fry until golden brown.')
+    assert.spy(_G.print).was_called_with('Pipe full of custard and coat with chocolate.')
   end)
 
   it('should properly resolve scope', function()
@@ -545,6 +568,30 @@ describe('interpret.Interpreter', function()
     should_generate_error_for(code, {
       token = { lexeme = 'Foo', line = 2, type = 'IDENTIFIER' },
       message = 'Superclass must be a class.'
+    })
+  end)
+
+  it('should error for an invalid superclass method', function()
+    local code = [[
+      class Doughnut {
+        cook() {
+          print "Fry until golden brown.";
+        }
+      }
+
+      class BostonCream < Doughnut {
+        cook() {
+          super.foo();
+          print "Pipe full of custard and coat with chocolate.";
+        }
+      }
+
+      BostonCream().cook();
+    ]]
+
+    should_generate_error_for(code, {
+      token = { lexeme = 'foo', line = 9, type = 'IDENTIFIER' },
+      message = "Undefined property 'foo'."
     })
   end)
 end)

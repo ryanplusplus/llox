@@ -24,6 +24,10 @@ return function(parent)
     end,
 
     get_at = function(distance, name)
+      if type(name) == 'string' then
+        name = { lexeme = name }
+      end
+
       local env = self
       for i = 1, distance do
         env = env.parent
