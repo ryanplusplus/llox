@@ -74,6 +74,7 @@ return function(interpreter, error_reporter)
         current_class = 'class'
 
         if node.superclass then
+          current_class = 'subclass'
           visit(node.superclass)
           begin_scope()
           scopes[#scopes].super = true
@@ -210,6 +211,18 @@ return function(interpreter, error_reporter)
       end,
 
       super = function()
+        if current_class == 'none' then
+          error({
+            token = node.keyword,
+            message = "Cannot use 'super' outside of a class."
+          })
+        elseif current_class ~= 'subclass' then
+          error({
+            token = node.keyword,
+            message = "Cannot use 'super' in a class with no superclass."
+          })
+        end
+
         resolve_local(node, node.keyword)
       end
     })

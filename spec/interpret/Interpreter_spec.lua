@@ -594,4 +594,30 @@ describe('interpret.Interpreter', function()
       message = "Undefined property 'foo'."
     })
   end)
+
+  it('should error for super used outside of a class', function()
+    local code = [[
+      super.foo();
+    ]]
+
+    should_generate_error_for(code, {
+      token = { lexeme = 'super', line = 1, type = 'SUPER' },
+      message = "Cannot use 'super' outside of a class."
+    })
+  end)
+
+  it('should error for super used in a class with no superclass', function()
+    local code = [[
+      class Foo {
+        init() {
+          super.foo();
+        }
+      }
+    ]]
+
+    should_generate_error_for(code, {
+      token = { lexeme = 'super', line = 3, type = 'SUPER' },
+      message = "Cannot use 'super' in a class with no superclass."
+    })
+  end)
 end)
