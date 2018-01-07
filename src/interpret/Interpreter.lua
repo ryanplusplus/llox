@@ -132,11 +132,22 @@ return function(error_reporter)
       class = function()
         env.define(node.name.lexeme)
 
+        local superclass
+        if node.superclass then
+          superclass = visit(node.superclass)
+          if type(superclass) ~= 'table' or not superclass.is_class then
+            error({
+              token = node.name,
+              message = 'Superclass must be a class.'
+            })
+          end
+        end
+
         local methods = {}
         for _, method in ipairs(node.methods) do
           methods[method.name.lexeme] = Function(method, env, method.name.lexeme == 'init')
         end
-        local class = Class(node.name.lexeme, methods)
+        local class = Class(node.name.lexeme, superclass, methods)
 
         env.set(node.name, class)
       end,

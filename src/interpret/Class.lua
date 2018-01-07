@@ -1,11 +1,13 @@
 local Instance = require 'interpret.Instance'
 
-return function(name, methods)
+return function(name, superclass, methods)
   local o = setmetatable({}, {
     __tostring = function()
       return name
     end
   })
+
+  o.is_class = true
 
   o.name = name
 
@@ -24,6 +26,10 @@ return function(name, methods)
   o.find_method = function(instance, name)
     if methods[name] then
       return methods[name].bind(instance)
+    end
+
+    if superclass then
+      return superclass.find_method(instance, name)
     end
   end
 

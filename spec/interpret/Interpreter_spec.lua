@@ -457,6 +457,23 @@ describe('interpret.Interpreter', function()
     assert.spy(_G.print).was_called_with(match.is_tostringable_to('The German chocolate cake is delicious!'))
   end)
 
+  it('should allow inherited methods to be called', function()
+    _G.print = spy.new(load'')
+
+    interpret(ast_for([[
+        class Doughnut {
+          cook() {
+            print "Fry until golden brown.";
+          }
+        }
+
+        class BostonCream < Doughnut {}
+
+        BostonCream().cook();
+      ]]))
+    assert.spy(_G.print).was_called_with(match.is_tostringable_to('Fry until golden brown.'))
+  end)
+
   it('should properly resolve scope', function()
     _G.print = spy.new(load'')
 
@@ -516,6 +533,18 @@ describe('interpret.Interpreter', function()
     should_generate_error_for('print this;', {
       token = { lexeme = 'this', line = 1, type = 'THIS' },
       message = "Cannot use 'this' outside of a class."
+    })
+  end)
+
+  it('should require superclasses to be classes', function()
+    local code = [[
+      var Bar = 3;
+      class Foo < Bar {}
+    ]]
+
+    should_generate_error_for(code, {
+      token = { lexeme = 'Foo', line = 2, type = 'IDENTIFIER' },
+      message = 'Superclass must be a class.'
     })
   end)
 end)

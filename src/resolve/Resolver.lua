@@ -73,6 +73,10 @@ return function(interpreter, error_reporter)
         local enclosing_class = current_class
         current_class = 'class'
 
+        if node.superclass then
+          visit(node.superclass)
+        end
+
         begin_scope();
         scopes[#scopes].this = true
         for _, method in ipairs(node.methods) do
