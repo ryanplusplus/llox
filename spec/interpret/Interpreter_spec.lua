@@ -490,10 +490,25 @@ describe('interpret.Interpreter', function()
     })
   end)
 
-  it('should not allow a a top-level return', function()
+  it('should not allow a top-level return', function()
     should_generate_error_for('return "top level";', {
       token = { lexeme = 'return', line = 1, type = 'RETURN' },
       message = 'Cannot return from top-level code.'
+    })
+  end)
+
+  it('should not allow a return from an initializer', function()
+    local code = [[
+      class Foo {
+        init() {
+          return "something else";
+        }
+      }
+    ]]
+
+    should_generate_error_for(code, {
+      token = { lexeme = 'return', line = 3, type = 'RETURN' },
+      message = 'Cannot return a value from an initializer.'
     })
   end)
 

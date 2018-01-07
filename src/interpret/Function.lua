@@ -1,6 +1,6 @@
 local Environment = require 'interpret.Environment'
 
-local function Function(node, env)
+local function Function(node, env, is_initializer)
   return setmetatable({
     arity = function()
       return #node.parameters
@@ -12,12 +12,13 @@ local function Function(node, env)
         env.define(node.parameters[i].lexeme, arguments[i])
       end
       interpret(node.body, env)
+      if is_initializer then return env.get_at(0, 'this') end
     end,
 
     bind = function(instance)
       local env = Environment(env)
       env.define('this', instance)
-      return Function(node, env)
+      return Function(node, env, is_initializer)
     end
   }, {
     __tostring = function()

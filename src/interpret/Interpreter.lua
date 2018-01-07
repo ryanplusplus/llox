@@ -134,7 +134,7 @@ return function(error_reporter)
 
         local methods = {}
         for _, method in ipairs(node.methods) do
-          methods[method.name.lexeme] = Function(method, env)
+          methods[method.name.lexeme] = Function(method, env, method.name.lexeme == 'init')
         end
         local class = Class(node.name.lexeme, methods)
 

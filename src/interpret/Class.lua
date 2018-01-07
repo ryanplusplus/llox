@@ -10,10 +10,14 @@ return function(name, methods)
   o.name = name
 
   o.arity = function()
-    return 0
+    return methods.init and methods.init.arity() or 0
   end
 
   o.call = function(interpret, arguments)
+    local instance = Instance(o)
+    if methods.init then
+      methods.init.bind(instance).call(interpret, arguments)
+    end
     return Instance(o)
   end
 

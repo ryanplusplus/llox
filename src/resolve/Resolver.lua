@@ -76,7 +76,7 @@ return function(interpreter, error_reporter)
         begin_scope();
         scopes[#scopes].this = true
         for _, method in ipairs(node.methods) do
-          resolve_function(method, 'method')
+          resolve_function(method, method.name.lexeme == 'init' and 'initializer' or 'method')
         end
         end_scope()
 
@@ -144,6 +144,13 @@ return function(interpreter, error_reporter)
           error_reporter({
             token = node.keyword,
             message = 'Cannot return from top-level code.'
+          })
+        end
+
+        if current_function == 'initializer' then
+          error_reporter({
+            token = node.keyword,
+            message = 'Cannot return a value from an initializer.'
           })
         end
 
