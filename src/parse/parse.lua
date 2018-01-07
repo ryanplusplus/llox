@@ -429,6 +429,16 @@ return function(tokens, error_reporter)
 
   local function class_declaration()
     local name = consume('IDENTIFIER', 'Expect class name.')
+
+    local superclass
+    if match({ 'LESS' }) then
+      consume('IDENTIFIER', 'Expect superclass name')
+      superclass = {
+        class = 'variable',
+        name = previous()
+      }
+    end
+
     consume('LEFT_BRACE', "Expect '{' before class body.")
 
     local methods = {}
@@ -440,6 +450,7 @@ return function(tokens, error_reporter)
 
     return {
       class = 'class',
+      superclass = superclass,
       name = name,
       methods = methods
     }

@@ -1057,6 +1057,28 @@ describe('parse.parse', function()
     }, parse(scan('class MyClass {} var o = MyClass(); o.foo = 3;')))
   end)
 
+  it('should parse sets', function()
+    assert.are.same({
+      {
+        class = 'class',
+        superclass = {
+          class = 'variable',
+          name = {
+            lexeme = 'Bar',
+            line = 1,
+            type = 'IDENTIFIER'
+          }
+        },
+        name = {
+          lexeme = 'Foo',
+          line = 1,
+          type = 'IDENTIFIER'
+        },
+        methods = {}
+      }
+    }, parse(scan('class Foo < Bar {}')))
+  end)
+
   it('should require a semicolon after expression statements', function()
     local error_spy = spy.new(load'')
     local error_reporter = function(token, message)
@@ -1286,6 +1308,12 @@ describe('parse.parse', function()
   it('should require a property name when getting a property', function()
     assert.has_error(function()
       parse(scan('class Foo { } var foo = Foo(); foo.;'))
+    end)
+  end)
+
+  it('should require a superclass to be named', function()
+    assert.has_error(function()
+      parse(scan('class Foo < { }'))
     end)
   end)
 
